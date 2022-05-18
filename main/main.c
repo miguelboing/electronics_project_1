@@ -10,7 +10,10 @@
 
 #include "driver/gpio.h"
 
-#define BLINK_LED 2
+/*Drivers */
+#include "devices/buttons/buttons.h"
+#include "devices/display_LCD/display_LCD.h"
+#include "devices/encoder/encoder.h"
 
 void app_main(void)
 {
@@ -22,9 +25,6 @@ void app_main(void)
 
 	while (1)
 	{
-		gpio_set_level(BLINK_LED, 1);
-		vTaskDelay(1000/ portTICK_PERIOD_MS);
-		gpio_set_level(BLINK_LED, 0);
-		vTaskDelay(1000/ portTICK_PERIOD_MS);
+        Blink_lEDS();
 	}
 }
