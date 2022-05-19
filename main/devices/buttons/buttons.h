@@ -8,8 +8,18 @@
 #ifndef BUTTONS_H_
 #define BUTTONS_H_
 
-#define BLINK_LED 2
+typedef enum
+{
+    BUTTON_0=0,          /**< Button 0. */
+    BUTTON_1,            /**< Button 1. */
+    BUTTON_2             /**< BUtton 2. */
+} button_e;
 
-void Blink_lEDS(void);
+
+void button_init(button_e button);
+
+void button_enable(button_e button);
+
+void button_disable(button_e button);
 
 #endif /* BUTTONS_H_ */

@@ -4,10 +4,19 @@
 #include "driver/gpio.h"
 #include "buttons.h"
 
-void Blink_lEDS(void)
-{
-    gpio_set_level(BLINK_LED, 1);
-    vTaskDelay(1000/ portTICK_PERIOD_MS);
-    gpio_set_level(BLINK_LED, 0);
-    vTaskDelay(1000/ portTICK_PERIOD_MS);
+void button_init(button_e button){
+/* Criar função que inicializa os serviços de
+ interrupção*/
 }
+
+void button_enable(button_e button){
+/* Habilita a interrupção do botão*/
+
+}
+
+void button_disable(button_e button){
+/* Desabilita a interrupção do botão*/
+}
+
+/* Interrupt Service Routines */
+
