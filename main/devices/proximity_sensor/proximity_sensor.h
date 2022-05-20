@@ -8,10 +8,9 @@
 #ifndef PROXIMITY_SENSOR_H_
 #define PROXIMITY_SENSOR_H_
 
-#define IR_out 22 /* GPIO 22*/
 
 void proximity_sensor_init(void);
 
-bool proximity_sensor_get_presence(void);
+int proximity_sensor_get_presence(void);
 
 #endif /* PROXIMITY_SENSOR_H_ */
