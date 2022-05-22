@@ -6,7 +6,7 @@
 
 void button_init(button_e button){
 
-   	gpio_config_t button_gpio = {};  
+    gpio_config_t button_gpio = {};  
     button_gpio.intr_type = GPIO_INTR_DISABLE; // Botao 1
     button_gpio.mode = GPIO_MODE_INPUT; 
     button_gpio.pull_up_en = GPIO_PULLUP_ENABLE; 
