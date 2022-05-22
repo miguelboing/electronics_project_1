@@ -10,16 +10,16 @@
 
 typedef enum
 {
-    BUTTON_0=0,          /**< Button 0. */
-    BUTTON_1,            /**< Button 1. */
-    BUTTON_2             /**< BUtton 2. */
+    BUTTON_1 = GPIO_NUM_27,          
+    BUTTON_2 = GPIO_NUM_32,            
+    BUTTON_3 = GPIO_NUM_33         
 } button_e;
-
 
 void button_init(button_e button);
 
-void button_enable(button_e button);
+int button_is_pressed(button_e button);
 
-void button_disable(button_e button);
+/* void button_enable(button_e button);
+   void button_disable(button_e button); */
 
 #endif /* BUTTONS_H_ */
