@@ -30,21 +30,18 @@ void app_main(void)
 
 	while (1)
 	{
-	button_1_is_pressed = button_is_pressed(BUTTON_1); 
-        button_2_is_pressed = button_is_pressed(BUTTON_2);
-        button_3_is_pressed = button_is_pressed(BUTTON_3);
+		button_1_is_pressed = button_is_pressed(BUTTON_1); 
+		button_2_is_pressed = button_is_pressed(BUTTON_2);
+		button_3_is_pressed = button_is_pressed(BUTTON_3);
 
-	if (button_1_is_pressed) {ESP_LOGI(TAG, "Button 1 was pressed!\n");}
-	else 
-	if (button_2_is_pressed) {ESP_LOGI(TAG, "Button 2 was pressed!\n");}
-	else
-	if (button_3_is_pressed) {ESP_LOGI(TAG, "Button 3 was pressed!\n");}
-	else                     
-				 {ESP_LOGI(TAG, "Press a button!\n");}
+		if (button_1_is_pressed) {ESP_LOGI(TAG, "Button 1 was pressed!\n");}
+		else 
+		if (button_2_is_pressed) {ESP_LOGI(TAG, "Button 2 was pressed!\n");}
+		else
+		if (button_3_is_pressed) {ESP_LOGI(TAG, "Button 3 was pressed!\n");}
+		else                     
+								 {ESP_LOGI(TAG, "Press a button!\n");}
 
-        vTaskDelay(pdMS_TO_TICKS(250));
+		vTaskDelay(pdMS_TO_TICKS(250));
 	}
-
 }
-
-

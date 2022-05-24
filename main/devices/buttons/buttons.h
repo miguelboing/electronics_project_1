@@ -10,9 +10,9 @@
 
 typedef enum
 {
-    BUTTON_1 = GPIO_NUM_27,          
-    BUTTON_2 = GPIO_NUM_32,            
-    BUTTON_3 = GPIO_NUM_33         
+    BUTTON_1 = GPIO_NUM_32,          
+    BUTTON_2 = GPIO_NUM_33,            
+    BUTTON_3 = GPIO_NUM_25         
 } button_e;
 
 void button_init(button_e button);
