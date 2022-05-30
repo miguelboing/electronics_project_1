@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "buttons.h": "c"
-    }
+    },
+    "idf.adapterTargetName": "esp32"
 }
