@@ -1,4 +1,4 @@
-19821631354954939
+19824941564731962
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -84496,3 +84496,17 @@ HX711_module
 0
 10
 10
+footprint_lib
+TP4056
+
+
+0
+0
+0
+footprint_lib
+fuse_ieee
+
+
+0
+0
+0

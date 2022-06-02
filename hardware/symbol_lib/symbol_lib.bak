@@ -6,7 +6,7 @@
     (property "Value" "HX711_module" (id 1) (at -12.065 10.795 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "" (id 2) (at 0 0 0)
+    (property "Footprint" "footprint_lib:HX711_module" (id 2) (at 0 0 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "" (id 3) (at 0 0 0)
