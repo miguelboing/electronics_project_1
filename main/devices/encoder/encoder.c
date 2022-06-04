@@ -60,13 +60,13 @@ void task_sw_encoder(void* param)
 {
 	sw_encoder_init(SW_encoder);
 
-    gpio_isr_handler_add(SW_encoder, sw_encoder_isr_handler, NULL);
+   	gpio_isr_handler_add(SW_encoder, sw_encoder_isr_handler, NULL);
 
 	while (1)
 	{
-        vTaskSuspend(NULL);
-        // confirm food quantity counter value;
-        vTaskDelay(pdMS_TO_TICKS(250));
+		vTaskSuspend(NULL);
+		// confirm food quantity counter value;
+		vTaskDelay(pdMS_TO_TICKS(250));
 	}
 }
 
@@ -78,28 +78,28 @@ void task_rotation_encoder(void* param)
 	clk_encoder_init(CLK_encoder); 
 	dt_encoder_init(DT_encoder);
 
-    gpio_isr_handler_add(CLK_encoder, rotation_encoder_isr_handler, NULL);
+   	gpio_isr_handler_add(CLK_encoder, rotation_encoder_isr_handler, NULL);
 
 	int present_state_CLK_encoder;
-    int present_state_DT_encoder;
-    int food_quantity_counter = 0;
+    	int present_state_DT_encoder;
+    	int food_quantity_counter = 0;
 
 	while (1)
 	{
-        vTaskSuspend(NULL);
+		vTaskSuspend(NULL);
 
-        present_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
-        present_state_DT_encoder = verify_clk_encoder_level(DT_encoder);
+		present_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
+		present_state_DT_encoder = verify_clk_encoder_level(DT_encoder);
 
-        if (present_state_CLK_encoder != present_state_DT_encoder) 
-        {
-            food_quantity_counter++;
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }
-        else 
-        {
-            food_quantity_counter--;
-            vTaskDelay(pdMS_TO_TICKS(10));
-        }    
+		if (present_state_CLK_encoder != present_state_DT_encoder) 
+		{
+		    food_quantity_counter++;
+		    vTaskDelay(pdMS_TO_TICKS(10));
+		}
+		else 
+		{
+		    food_quantity_counter--;
+		    vTaskDelay(pdMS_TO_TICKS(10));
+		}    
 	}
 }
