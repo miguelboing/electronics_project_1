@@ -1,4 +1,4 @@
-19824941582059323
+19828251514566562
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -84504,7 +84504,21 @@ TP4056
 6
 6
 footprint_lib
+danger
+
+
+0
+0
+0
+footprint_lib
 fuse_ieee
+
+
+0
+0
+0
+footprint_lib
+parafuso
 
 
 0
