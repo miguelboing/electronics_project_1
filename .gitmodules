@@ -1,0 +1,9 @@
+[submodule "libs/esp-iot-solution"]
+	path = libs/esp-iot-solution
+	url = https://github.com/espressif/esp-iot-solution
+[submodule "libs/esp-idf-lib"]
+	path = libs/esp-idf-lib
+	url = https://github.com/UncleRus/esp-idf-lib
+[submodule "libs/esp-idf"]
+	path = libs/esp-idf
+	url = https://github.com/espressif/esp-idf
