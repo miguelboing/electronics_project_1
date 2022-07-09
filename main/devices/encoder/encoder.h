@@ -21,8 +21,6 @@ void sw_encoder_init(sw_encoder_e encod);
 
 int verify_clk_encoder_level(clk_encoder_e encod);
 int verify_dt_encoder_level(dt_encoder_e encod);
-
-void task_sw_encoder(void* param);
-void task_rotation_encoder(void* param);
+int sw_encoder_is_pressed(sw_encoder_e encod);
 
 #endif /* ENCODER_H_ */

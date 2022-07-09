@@ -15,14 +15,7 @@ typedef enum
     BUTTON_3 = GPIO_NUM_25         
 } button_e;
 
-TaskHandle_t task_handle_button_1 = NULL;
-TaskHandle_t task_handle_button_2 = NULL;
-TaskHandle_t task_handle_button_3 = NULL;
-
 void button_init(button_e button);
-
-void task_button_1(void* param);
-void task_button_2(void* param);
-void task_button_3(void* param);
+int button_is_pressed(button_e button);
 
 #endif /* BUTTONS_H_ */
