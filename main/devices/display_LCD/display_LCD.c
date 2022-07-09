@@ -13,7 +13,7 @@
 #include "driver/gpio.h"
 
 /*Components*/
-//#include "../../components/esp32-smbus/include/smbus.h"
+#include "../../components/esp32-smbus/smbus.h"
 
 /*Devices*/
 #include "../buttons/buttons.h"

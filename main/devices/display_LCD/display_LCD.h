@@ -9,7 +9,7 @@
 #define DISPLAY_LCS_H_
 
 /*Components*/
-// #include "../../components/esp32-i2c-lcd1602/include/i2c-lcd1602.h"
+#include "../../components/esp32-i2c-lcd1602/i2c-lcd1602.h"
 
 #define I2C_MASTER_SCL_IO           GPIO_NUM_22      /* GPIO number used for I2C master clock */
 #define I2C_MASTER_SDA_IO           GPIO_NUM_21      /* GPIO number used for I2C master data  */
