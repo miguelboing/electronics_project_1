@@ -9,8 +9,7 @@
 #define DISPLAY_LCS_H_
 
 /*Components*/
-#include "../../components/esp32-smbus/include/smbus.h"
-#include "../../components/esp32-i2c-lcd1602/include/i2c-lcd1602.h"
+// #include "../../components/esp32-i2c-lcd1602/include/i2c-lcd1602.h"
 
 #define I2C_MASTER_SCL_IO           GPIO_NUM_22      /* GPIO number used for I2C master clock */
 #define I2C_MASTER_SDA_IO           GPIO_NUM_21      /* GPIO number used for I2C master data  */
@@ -28,8 +27,8 @@ void turn_off_display(i2c_lcd1602_info_t * lcd);
 void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min);
 
 int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char);
-int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd);
-int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd);
+int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd, int first_time);
+int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time);
 int display_go_screen_2(i2c_lcd1602_info_t * lcd);
 int display_go_screen_3(i2c_lcd1602_info_t * lcd);
 
