@@ -57,7 +57,7 @@ void reset_buttons_and_encoder_value(void)
     button_1_is_pressed = 0; button_2_is_pressed = 0; button_3_is_pressed = 0; sw_encod_is_pressed = 0; sw_encod_is_pressed_feedback = 0;
 }
 
-void encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char)
+int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char)
 {
     while(!sw_encod_is_pressed || !sw_encod_is_pressed_feedback) 
     {
@@ -129,6 +129,7 @@ void encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
     reset_buttons_and_encoder_value();
     i2c_lcd1602_clear(lcd);
     vTaskDelay(pdMS_TO_TICKS(1000));
+    return aux;
 }
 
 void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[], char rtc_hour_min_char, int column)
@@ -172,7 +173,7 @@ int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Insira a hora:"); 
     i2c_lcd1602_move_cursor(lcd, 7, 1); 
     i2c_lcd1602_write_string(lcd, "00");
-    encoder_variation_display(lcd, hour_aux, 23, 0, 7, hour_aux_string, hour_aux_char);
+    hour_aux = encoder_variation_display(lcd, hour_aux, 23, 0, 7, hour_aux_string, hour_aux_char);
     return hour_aux;
 }
 
@@ -184,7 +185,7 @@ int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Minutos:");
     i2c_lcd1602_move_cursor(lcd, 7, 1); 
     i2c_lcd1602_write_string(lcd, "00"); 
-    encoder_variation_display(lcd, min_aux, 59, 0, 7, min_aux_string, min_aux_char);
+    min_aux = encoder_variation_display(lcd, min_aux, 59, 0, 7, min_aux_string, min_aux_char);
     return min_aux;
 }
 
@@ -217,7 +218,7 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
     sprintf(periodicity_aux_string, "%d", periodicity_aux); 
     i2c_lcd1602_move_cursor(lcd, 4, 1);
     i2c_lcd1602_write_string(lcd, periodicity_aux_string);
-    encoder_variation_display(lcd, periodicity_aux, 23, 4, 4, periodicity_aux_string, periodicity_aux_char);
+    periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4, periodicity_aux_string, periodicity_aux_char);
     reset_buttons_and_encoder_value();
     i2c_lcd1602_clear(lcd);
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -236,7 +237,7 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, food_aux_string);
     reset_buttons_and_encoder_value();
     past_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
-    encoder_variation_display(lcd, food_aux, 1000, 100, 3, food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
+    food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3, food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_move_cursor(lcd, 0, 0);
     i2c_lcd1602_write_string(lcd, "Alteracao feita!");    
