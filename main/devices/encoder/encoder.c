@@ -15,6 +15,8 @@
 
 static const char* TAG = "Encoder Feedback";
 
+int past_state_CLK_encoder, present_state_CLK_encoder, present_state_DT_encoder, sw_encod_is_pressed, sw_encod_is_pressed_feedback; 
+
 void clk_encoder_init(clk_encoder_e encod)
 {
     gpio_config_t clk_encoder_gpio = {};  
@@ -51,17 +53,20 @@ void sw_encoder_init(sw_encoder_e encod)
     else ESP_LOGI(TAG, "SW_encoder was not configured sucessfully\n"); 
 }
 
-int sw_encoder_is_pressed(sw_encoder_e encod)
-{
-    return !gpio_get_level(encod);
-}
+int sw_encoder_is_pressed(sw_encoder_e encod) {return !gpio_get_level(encod);}
+int verify_clk_encoder_level(clk_encoder_e encod) {return gpio_get_level(encod);}
+int verify_dt_encoder_level(dt_encoder_e encod) {return gpio_get_level(encod);}
 
-int verify_clk_encoder_level(clk_encoder_e encod) 
-{
-    return gpio_get_level(encod);
-}
+int get_past_state_CLK_encoder(void) {return past_state_CLK_encoder;}
+int get_present_state_CLK_encoder(void) {return present_state_CLK_encoder;}
+int get_present_state_DT_encoder(void) {return present_state_DT_encoder;}
+int get_sw_encod_is_pressed(void) {return sw_encod_is_pressed;}
+int get_sw_encod_is_pressed_feedback(void) {return sw_encod_is_pressed_feedback;}
 
-int verify_dt_encoder_level(dt_encoder_e encod)
-{
-    return gpio_get_level(encod);
-}
+void update_past_state_CLK_encoder(void) {past_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);}
+void update_present_state_CLK_encoder(void) {present_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);}
+void update_present_state_DT_encoder(void) {present_state_DT_encoder = verify_dt_encoder_level(DT_encoder);}
+void update_sw_encod_is_pressed(void) {sw_encod_is_pressed = sw_encoder_is_pressed(SW_encoder);}
+void update_sw_encod_is_pressed_feedback(void) {sw_encod_is_pressed_feedback = sw_encoder_is_pressed(SW_encoder);}
+
+void reset_sw_encoder_state(void) {sw_encod_is_pressed = 0; sw_encod_is_pressed_feedback = 0;}

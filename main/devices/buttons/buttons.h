@@ -16,6 +16,17 @@ typedef enum
 } button_e;
 
 void button_init(button_e button);
+
+void reset_buttons_state(void);
+
+void update_button_1_state(void);
+void update_button_2_state(void);
+void update_button_3_state(void);
+
 int button_is_pressed(button_e button);
+
+int get_button_1_state(void);
+int get_button_2_state(void);
+int get_button_3_state(void);
 
 #endif /* BUTTONS_H_ */

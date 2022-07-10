@@ -18,27 +18,24 @@
 /*Devices*/
 #include "../buttons/buttons.h"
 #include "../encoder/encoder.h"
+#include "../rtc/rtc.h"
 
 static const char* TAG = "Display Feedback";
 
-// these variables will set rtc start values
-int rtc_hour_value, rtc_min_value;
-char rtc_hour_value_char, rtc_min_value_char;
-char rtc_hour_value_string[], rtc_min_value_string[];
+// auxiliary variables for setting rtc reference values
+int start_RTC = 0;
+char rtc_hour_value_char, rtc_min_value_char, rtc_hour_value_string[], rtc_min_value_string[];
 
 // auxiliary variables for storing periodicty and food quantity values that will be set in screens 2 and 3
-int periodicity_hour_value, periodicity_aux = 12;
-int food_quantitiy_value, food_aux = 100;
+int periodicity_aux = 12;
+int food_aux = 100;
 char periodicity_aux_char, periodicity_aux_string[], food_aux_string[];
 
 // auxiliary variables for interfacing lcd and encoder easily
 int hour_aux, min_aux = 0;
-char hour_aux_string[], min_aux_string[];
-char hour_aux_char, min_aux_char;
+char hour_aux_char, min_aux_char, hour_aux_string[], min_aux_string[];
 
 int display_screen_state = 0; // display auxiliary variable, through it we can know which screen is currently being displayed
-int button_1_is_pressed, button_2_is_pressed, button_3_is_pressed; // button auxiliary variables
-int past_state_CLK_encoder, present_state_CLK_encoder, present_state_DT_encoder, sw_encod_is_pressed, sw_encod_is_pressed_feedback ; // rotatory encoder auxiliary variables 
 
 void i2c_master_init(void)
 {
@@ -56,24 +53,30 @@ void i2c_master_init(void)
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
+int get_display_screen_state(void) {return display_screen_state;}
+int get_start_RTC(void) {return start_RTC;}
+
+void init_RTC(void) {start_RTC = 1;}
+void stop_RTC(void) {start_RTC = 0;}
+
 void reset_buttons_and_encoder_value(void)
 {
-    button_1_is_pressed = 0; button_2_is_pressed = 0; button_3_is_pressed = 0; sw_encod_is_pressed = 0; sw_encod_is_pressed_feedback = 0;
+    reset_buttons_state(); reset_sw_encoder_state();
     ESP_LOGI(TAG, "Buttons and encoder reseted.\n");
 }
 
 int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char)
 {
-    while(!sw_encod_is_pressed || !sw_encod_is_pressed_feedback) 
+    while(!get_sw_encod_is_pressed() || !get_sw_encod_is_pressed_feedback()) 
     {
-        sw_encod_is_pressed = sw_encoder_is_pressed(SW_encoder);
-        present_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
-        if(past_state_CLK_encoder != present_state_CLK_encoder)
+        update_sw_encod_is_pressed();
+        update_present_state_CLK_encoder();
+        if(get_past_state_CLK_encoder() != get_present_state_CLK_encoder())
         {
-            present_state_DT_encoder = verify_clk_encoder_level(DT_encoder);
-            if (present_state_CLK_encoder != present_state_DT_encoder) 
+            update_present_state_DT_encoder();
+            if (get_present_state_CLK_encoder() != get_present_state_DT_encoder()) 
             {   
-                // all these if/else were needed cause we are using the same function for screens 0, 2 and 3
+                // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux < top_limit) aux++;} // screen 0.0 and 0.1 condition
                 else if(aux<100) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
                 else {if(aux >= bottom_limit && aux < top_limit) aux += 100;} // screen 3 condition
@@ -100,7 +103,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, 
             }
             else 
             {
-                // all these if/else were needed cause we are using the same function for screens 0, 2 and 3
+                // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux > bottom_limit) aux--;} // screen 0.0 and 0.1 condition
                 else if(aux<100) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
                 else {if(aux > bottom_limit && aux <= top_limit) aux -= 100;} // screen 3 condition
@@ -126,10 +129,10 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, 
                     i2c_lcd1602_write_char(lcd, aux_char);
                 }                     
             }  
-            past_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
+            update_past_state_CLK_encoder();
         }
-        vTaskDelay(pdMS_TO_TICKS(20)); // adding this delay in pratice helped with encoder precision, the delay can not be much bigger, otherwise encoder gets to slow
-        sw_encod_is_pressed_feedback = sw_encoder_is_pressed(SW_encoder); // adding this second variable for confirming sw_encoder was pressed helped a lot with precision
+        vTaskDelay(pdMS_TO_TICKS(20)); // adding this delay in pratice helped with encoder precision, the delay can not be much bigger, otherwise encoder gets too slow
+        update_sw_encod_is_pressed_feedback(); // adding this second variable for confirming sw_encoder was pressed helped a lot with precision
     }
     ESP_LOGI(TAG, "SW_encoder was pressed!.\n");
     reset_buttons_and_encoder_value();
@@ -140,7 +143,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, 
 
 void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[], char rtc_hour_min_char, int column)
 {
-    if(rtc_hour_min_update >= 10) // displays the hour or minute that was stored from rtc value (in this example it's value is not updating yet)
+    if(rtc_hour_min_update >= 10) // displays the hour or minute that was stored from rtc value
     {
         sprintf(rtc_hour_min_string, "%d", rtc_hour_min_update); 
         i2c_lcd1602_move_cursor(lcd, column, 1);
@@ -153,7 +156,6 @@ void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char 
         i2c_lcd1602_write_char(lcd, '0');
         i2c_lcd1602_write_char(lcd, rtc_hour_min_char);
     }
-    if(column == 5) i2c_lcd1602_write_char(lcd, ':'); // column == 5 means the value being displayed it's hour, so we add ":" on the right
 }
 
 void turn_off_display(i2c_lcd1602_info_t * lcd)
@@ -232,20 +234,24 @@ int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time)
 
 void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
 {
-    // will freeze screen updating rtc values until either button_1, button_2 or button_3 is pressed **updating rtc values not implemented yet**
+    // will freeze screen updating rtc values until either button_1, button_2 or button_3 is pressed
     ESP_LOGI(TAG, "Begin Screen 1.\n");
     display_screen_state = 1;
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_move_cursor(lcd, 3, 0);
     i2c_lcd1602_write_string(lcd, "Bem vindo!");
-    while(!button_1_is_pressed && !button_3_is_pressed && !button_2_is_pressed)
+    i2c_lcd1602_move_cursor(lcd, 7, 1);
+    i2c_lcd1602_write_char(lcd, ':');
+    while(!get_button_1_state() && !get_button_2_state() && !get_button_3_state())
     {
-        button_1_is_pressed = button_is_pressed(BUTTON_1); 
-        button_2_is_pressed = button_is_pressed(BUTTON_2); 
-        button_3_is_pressed = button_is_pressed(BUTTON_3);
+        update_button_1_state();
+        update_button_2_state();
+        update_button_3_state();
         update_time_values(lcd, hour, rtc_hour_value_string, rtc_hour_value_char, 5);
         update_time_values(lcd, min, rtc_min_value_string, rtc_min_value_char, 8);
-        vTaskDelay(pdMS_TO_TICKS(10));
+        hour = get_time_hour();
+        min = get_time_min();
+        vTaskDelay(pdMS_TO_TICKS(50));
     } 
     i2c_lcd1602_clear(lcd);
     ESP_LOGI(TAG, "End of Screen 1.\n");
@@ -282,7 +288,6 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_move_cursor(lcd, 3, 1);
     i2c_lcd1602_write_string(lcd, food_aux_string);
     reset_buttons_and_encoder_value();
-    past_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);
     food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3, food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
     i2c_lcd1602_clear(lcd);
     ESP_LOGI(TAG, "End of Screen 3.\n");
@@ -294,86 +299,4 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     turn_off_display(lcd);
     reset_buttons_and_encoder_value();
     return food_aux;
-}
-
-void lcd1602_task(void * pvParameter)
-{
-    // i2c and devices initialization
-    i2c_master_init();
-    clk_encoder_init(CLK_encoder); 
-	dt_encoder_init(DT_encoder);
-    sw_encoder_init(SW_encoder);
-    button_init(BUTTON_1);
-    button_init(BUTTON_2);
-    button_init(BUTTON_3);
-
-    int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
-    
-    // setting up lcd address and I2C_MASTER_NUM
-    i2c_port_t i2c_num = I2C_MASTER_NUM;
-    uint8_t lcd_address = 0x27; // configuring lcd i2c address
-
-    // setting up smbus
-    smbus_info_t * smbus_info = smbus_malloc();
-    smbus_init(smbus_info, i2c_num, lcd_address);
-    smbus_set_timeout(smbus_info, 1000 / portTICK_PERIOD_MS);
-
-    // set up the LCD1602 device with backlight off, (2,32,16) = (rows, all columns, visible columns)  
-    i2c_lcd1602_info_t * lcd_info = i2c_lcd1602_malloc(); 
-    i2c_lcd1602_init(lcd_info, smbus_info, true, 2, 32, 16); 
-
-    while(1)
-    { 
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        ESP_LOGI(TAG, "Begin RTC reference values settings.\n");
-        reset_buttons_and_encoder_value();
-        rtc_hour_value = display_go_screen_0_hour(lcd_info , first_time_config);
-        ESP_LOGI(TAG, "RTC_hour reference value set to %d hours.\n", rtc_hour_value);
-
-        rtc_min_value = display_go_screen_0_minutes(lcd_info, first_time_config);
-        ESP_LOGI(TAG, "RTC_minutes reference value set to %d minutes.\n", rtc_min_value);
-
-        if(first_time_config != 0) first_time_config = 0; 
-
-        while(1) // after RTC values are set in screen 0 this task will run indefinitely
-        {
-            if(display_screen_state == 5) // if while(1) was "restarted" button_1 must be pressed to advance
-            {
-                while(!button_1_is_pressed) 
-                {
-                    button_1_is_pressed = button_is_pressed(BUTTON_1); 
-                    vTaskDelay(pdMS_TO_TICKS(10));
-                }
-                ESP_LOGI(TAG, "Button_1 was pressed!\n");
-                i2c_lcd1602_set_backlight(lcd_info, true); 
-                reset_buttons_and_encoder_value();
-                vTaskDelay(pdMS_TO_TICKS(1000));
-            }
-            
-            display_go_screen_1(lcd_info, rtc_hour_value, rtc_min_value);
-            if (button_3_is_pressed) // when in screen 1 button 3 will turn off backlight, going to stand by mode
-            {
-                ESP_LOGI(TAG, "Button_3 was pressed!\n");
-                turn_off_display(lcd_info);
-            } 
-            else if(button_1_is_pressed) // when in screen 1 button 1 will advance, moving to screen 2
-            {
-                ESP_LOGI(TAG, "Button_1 was pressed!\n");
-                periodicity_hour_value = display_go_screen_2(lcd_info);
-                ESP_LOGI(TAG, "Periodicity value set to %d hours.\n", periodicity_hour_value);
-            } 
-            else 
-            {
-                ESP_LOGI(TAG, "Button_2 was pressed!\n");
-                break; // when in screen 1 if button 2 is pressed you can configure RTC values again
-            }
-            
-            if(display_screen_state == 2) 
-            {
-                food_quantitiy_value = display_go_screen_3(lcd_info);  
-                ESP_LOGI(TAG, "Food_quantity value set to %d grams.\n", food_quantitiy_value);
-            }
-        }
-    }
-    vTaskDelete(NULL);
 }

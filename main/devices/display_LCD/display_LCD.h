@@ -21,6 +21,12 @@
 
 void i2c_master_init(void);
 
+int get_display_screen_state(void);
+int get_start_RTC(void);
+
+void init_RTC(void);
+void stop_RTC(void);
+
 void reset_buttons_and_encoder_value(void);
 void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[], char rtc_hour_min_char, int column);
 void turn_off_display(i2c_lcd1602_info_t * lcd);

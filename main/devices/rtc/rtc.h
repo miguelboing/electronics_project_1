@@ -7,14 +7,18 @@
 
 #ifndef RTC_H_
 #define RTC_H_
-typedef unsigned int time_t;
-typedef int time_hour_t;
-typedef int time_min_t;
 
 void rtc_update_time(void);
 
-time_hour_t rtc_time_hour(void);
+int get_time_sec(void);
+int get_time_min(void);
+int get_time_hour(void);
 
-time_min_t rtc_time_min(void);
+void update_time_hour(int hours);
+void update_time_min(int minutes);
+
+void reset_rtc(void);
+
+void rtc_task(void * pvParameter);
 
 #endif /* RTC_H_ */

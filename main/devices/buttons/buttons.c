@@ -15,6 +15,8 @@
 
 static const char* TAG = "Buttons Feedback";
 
+int button_1_is_pressed, button_2_is_pressed, button_3_is_pressed; 
+
 void button_init(button_e button)
 {
     gpio_config_t button_init_gpio = {};  
@@ -27,7 +29,15 @@ void button_init(button_e button)
     else ESP_LOGI(TAG, "Button was not configured sucessfully!\n"); 
 }
 
-int button_is_pressed(button_e button)
-{
-    return !gpio_get_level(button);
-}
+void reset_buttons_state(void) {button_1_is_pressed = 0; button_2_is_pressed = 0; button_3_is_pressed = 0;}
+
+void update_button_1_state(void) {button_1_is_pressed = button_is_pressed(BUTTON_1);}
+void update_button_2_state(void) {button_2_is_pressed = button_is_pressed(BUTTON_2);}
+void update_button_3_state(void) {button_3_is_pressed = button_is_pressed(BUTTON_3);}
+
+int button_is_pressed(button_e button) {return !gpio_get_level(button);}
+
+int get_button_1_state(void) {return button_1_is_pressed;}
+int get_button_2_state(void) {return button_2_is_pressed;}
+int get_button_3_state(void) {return button_3_is_pressed;}
+
