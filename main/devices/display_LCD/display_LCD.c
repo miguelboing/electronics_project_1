@@ -331,7 +331,7 @@ void lcd1602_task(void * pvParameter)
         ESP_LOGI(TAG, "RTC_hour reference value set to %d hours.\n", rtc_hour_value);
 
         rtc_min_value = display_go_screen_0_minutes(lcd_info, first_time_config);
-        ESP_LOGI(TAG, "RTC_minutes reference value set to %d minutes.\n", min_aux);
+        ESP_LOGI(TAG, "RTC_minutes reference value set to %d minutes.\n", rtc_min_value);
 
         if(first_time_config != 0) first_time_config = 0; 
 
