@@ -11,11 +11,14 @@
 
 #include "driver/gpio.h"
 
-/*Drivers */
+/*Devices */
 #include "devices/buttons/buttons.h"
 #include "devices/display_LCD/display_LCD.h"
 #include "devices/encoder/encoder.h"
+#include "devices/load_sensor/load_sensor.h"
+#include "devices/proximity_sensor/proximity_sensor.h"
 #include "devices/rtc/rtc.h"
+#include "devices/servo_motor/servo_motor.h"
 
 /*Components*/
 #include "components/esp32-smbus/smbus.h"
@@ -25,6 +28,8 @@ static const char* TAG = "Main Feedback";
 int rtc_hour_value, rtc_min_value;
 int periodicity_hour_value = 12;
 int food_quantitiy_value = 100;
+bool rtc_started = false;
+
 
 void app_main(void)
 {
@@ -35,12 +40,17 @@ void app_main(void)
 void lcd1602_task(void * pvParameter)
 {
     // i2c and devices initialization
+    button_init(BUTTON_1); button_init(BUTTON_2); button_init(BUTTON_3);
     i2c_master_init();
     clk_encoder_init(CLK_encoder); dt_encoder_init(DT_encoder); sw_encoder_init(SW_encoder);
-    button_init(BUTTON_1); button_init(BUTTON_2); button_init(BUTTON_3);
+    load_sensor_init();
+    proximity_sensor_init();
+    servo_motor_init();
+
+
 
     int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
-    
+
     // setting up lcd address and I2C_MASTER_NUM
     i2c_port_t i2c_num = I2C_MASTER_NUM;
     uint8_t lcd_address = 0x27; 
@@ -60,19 +70,16 @@ void lcd1602_task(void * pvParameter)
         ESP_LOGI(TAG, "Begin RTC reference settings.\n");
         reset_buttons_and_encoder_value();
 
-        reset_rtc();
-        stop_RTC();
+        rtc_reset();
 
         rtc_hour_value = display_go_screen_0_hour(lcd_info , first_time_config);
-        update_time_hour(rtc_hour_value);
+        rtc_update_time_hour(rtc_hour_value);
         ESP_LOGI(TAG, "RTC_hour reference set to %d hours.\n", rtc_hour_value);
 
         rtc_min_value = display_go_screen_0_minutes(lcd_info, first_time_config);
-        update_time_min(rtc_min_value);
+        rtc_update_time_min(rtc_min_value);
         ESP_LOGI(TAG, "RTC_minutes reference set to %d minutes.\n", rtc_min_value);
-
-        init_RTC();
-
+        rtc_started = true;
         if(first_time_config != 0) first_time_config = 0; 
 
         while(1) // after RTC values are set in screen 0 this task will run indefinitely, unless button_2 is pressed in screen 1
@@ -122,15 +129,13 @@ void rtc_task(void * pvParameter)
 {
     while(1)
     {
-        get_start_RTC();
-        
-        if(get_start_RTC())
+        if(rtc_started)
         {
             rtc_update_time();
             
-            ESP_LOGI(TAG, "RTC seconds value is %d\n", get_time_sec());
-            ESP_LOGI(TAG, "RTC minutes value is %d\n",get_time_min());
-            ESP_LOGI(TAG, "RTC hours value is %d\n",get_time_hour());
+            ESP_LOGI(TAG, "RTC seconds value is %d\n", rtc_get_time_sec());
+            ESP_LOGI(TAG, "RTC minutes value is %d\n", rtc_get_time_min());
+            ESP_LOGI(TAG, "RTC hours value is %d\n", rtc_get_time_hour());
         }
         else 
         {

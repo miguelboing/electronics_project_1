@@ -10,14 +10,16 @@
 
 void rtc_update_time(void);
 
-int get_time_sec(void);
-int get_time_min(void);
-int get_time_hour(void);
+int rtc_get_time_sec(void);
+int rtc_get_time_min(void);
+int rtc_get_time_hour(void);
+int rtc_get_time_abs(void);
 
-void update_time_hour(int hours);
-void update_time_min(int minutes);
 
-void reset_rtc(void);
+void rtc_update_time_hour(unsigned int hours);
+void rtc_update_time_min(unsigned int minutes);
+
+void rtc_reset(void);
 
 void rtc_task(void * pvParameter);
 
