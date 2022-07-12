@@ -22,20 +22,17 @@
 
 static const char* TAG = "Display Feedback";
 
-// auxiliary variables for setting rtc reference values
-int start_RTC = 0;
-char rtc_hour_value_char, rtc_min_value_char, rtc_hour_value_string[20], rtc_min_value_string[20];
+static int start_RTC = 0; /* Initial RTC Value */
+static int periodicity_aux = 12; /* Periodicity */
+static int food_aux = 100; /* Food Quantity */
+static int display_screen_state = 0; /* Current Screen */
+static int hour_aux = 0; /* RTC Hour */
+static int min_aux = 0; /* RTC Minute */
 
-// auxiliary variables for storing periodicty and food quantity values that will be set in screens 2 and 3
-int periodicity_aux = 12;
-int food_aux = 100;
-char periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20];
-
-// auxiliary variables for interfacing lcd and encoder easily
-int hour_aux, min_aux = 0;
-char hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
-
-int display_screen_state = 0; // display auxiliary variable, through it we can know which screen is currently being displayed
+static char rtc_hour_value_char, rtc_min_value_char;
+static char rtc_hour_value_string[20], rtc_min_value_string[20];
+static char periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20];
+static char hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
 
 void i2c_master_init(void)
 {
@@ -46,26 +43,40 @@ void i2c_master_init(void)
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
-    if (gpio_config(&conf) == ESP_OK) ESP_LOGI(TAG, "Successfully configured I2C display!\n");
-    else ESP_LOGI(TAG, "I2C display was not configured sucessfully!\n"); 
 
     i2c_param_config(I2C_MASTER_NUM, &conf);
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
-int get_display_screen_state(void) {return display_screen_state;}
-int get_start_RTC(void) {return start_RTC;}
+int get_display_screen_state(void)
+{
+    return display_screen_state;
+}
 
-void init_RTC(void) {start_RTC = 1;}
-void stop_RTC(void) {start_RTC = 0;}
+int get_start_RTC(void)
+{
+    return start_RTC;
+}
+
+void init_RTC(void)
+{
+    start_RTC = 1;
+}
+
+void stop_RTC(void)
+{
+    start_RTC = 0;
+}
 
 void reset_buttons_and_encoder_value(void)
 {
-    reset_buttons_state(); reset_sw_encoder_state();
+    reset_buttons_state();
+    reset_sw_encoder_state();
     ESP_LOGI(TAG, "Buttons and encoder reseted.\n");
 }
 
-int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char)
+int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
+                              int bottom_limit, int column, char aux_string[], char aux_char)
 {
     while(!get_sw_encod_is_pressed() || !get_sw_encod_is_pressed_feedback()) 
     {
@@ -247,8 +258,13 @@ void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
         update_button_1_state();
         update_button_2_state();
         update_button_3_state();
-        update_time_values(lcd, hour, rtc_hour_value_string, rtc_hour_value_char, 5);
-        update_time_values(lcd, min, rtc_min_value_string, rtc_min_value_char, 8);
+
+        update_time_values(lcd, hour, rtc_hour_value_string,
+                           rtc_hour_value_char, 5);
+
+        update_time_values(lcd, min, rtc_min_value_string,
+                           rtc_min_value_char, 8);
+
         hour = get_time_hour();
         min = get_time_min();
         vTaskDelay(pdMS_TO_TICKS(50));
@@ -269,7 +285,8 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
     sprintf(periodicity_aux_string, "%d", periodicity_aux);
     i2c_lcd1602_move_cursor(lcd, 4, 1);
     i2c_lcd1602_write_string(lcd, periodicity_aux_string);
-    periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4, periodicity_aux_string, periodicity_aux_char);
+    periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4,
+                                                periodicity_aux_string, periodicity_aux_char);
     i2c_lcd1602_clear(lcd);
     vTaskDelay(pdMS_TO_TICKS(1000));
     ESP_LOGI(TAG, "End of Screen 2.\n");
@@ -288,7 +305,8 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_move_cursor(lcd, 3, 1);
     i2c_lcd1602_write_string(lcd, food_aux_string);
     reset_buttons_and_encoder_value();
-    food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3, food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
+    food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3,
+                                         food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
     i2c_lcd1602_clear(lcd);
     ESP_LOGI(TAG, "End of Screen 3.\n");
     i2c_lcd1602_move_cursor(lcd, 0, 0);
