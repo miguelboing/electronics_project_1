@@ -24,16 +24,16 @@ static const char* TAG = "Display Feedback";
 
 // auxiliary variables for setting rtc reference values
 int start_RTC = 0;
-char rtc_hour_value_char, rtc_min_value_char, rtc_hour_value_string[], rtc_min_value_string[];
+char rtc_hour_value_char, rtc_min_value_char, rtc_hour_value_string[20], rtc_min_value_string[20];
 
 // auxiliary variables for storing periodicty and food quantity values that will be set in screens 2 and 3
 int periodicity_aux = 12;
 int food_aux = 100;
-char periodicity_aux_char, periodicity_aux_string[], food_aux_string[];
+char periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20];
 
 // auxiliary variables for interfacing lcd and encoder easily
 int hour_aux, min_aux = 0;
-char hour_aux_char, min_aux_char, hour_aux_string[], min_aux_string[];
+char hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
 
 int display_screen_state = 0; // display auxiliary variable, through it we can know which screen is currently being displayed
 
@@ -116,7 +116,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, 
                 }
                 else if(aux == 900)
                 {
-                    sprintf(aux_string, "%d", aux); 
+                    sprintf(aux_string, "%d", aux);
                     i2c_lcd1602_move_cursor(lcd, column-1, 1); 
                     i2c_lcd1602_write_char(lcd, ' '); // erases the "1" from "1000" value that was read before.
                     i2c_lcd1602_write_string(lcd, aux_string);
@@ -189,7 +189,7 @@ int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd, int first_time)
     {
         if(hour_aux >= 10)
         {
-            sprintf(hour_aux_string, "%d", hour_aux); 
+            sprintf(hour_aux_string, "%d", hour_aux);
             i2c_lcd1602_write_string(lcd, hour_aux_string);
         }  
         else 
@@ -217,7 +217,7 @@ int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time)
     {
         if(min_aux >= 10)
         {
-            sprintf(min_aux_string, "%d", min_aux); 
+            sprintf(min_aux_string, "%d", min_aux);
             i2c_lcd1602_write_string(lcd, min_aux_string);
         }  
         else 
@@ -266,7 +266,7 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Periodicidade:");
     i2c_lcd1602_move_cursor(lcd, 7, 1);
     i2c_lcd1602_write_string(lcd, "horas");
-    sprintf(periodicity_aux_string, "%d", periodicity_aux); 
+    sprintf(periodicity_aux_string, "%d", periodicity_aux);
     i2c_lcd1602_move_cursor(lcd, 4, 1);
     i2c_lcd1602_write_string(lcd, periodicity_aux_string);
     periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4, periodicity_aux_string, periodicity_aux_char);
@@ -284,7 +284,7 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Quantidade:");
     i2c_lcd1602_move_cursor(lcd, 7, 1);
     i2c_lcd1602_write_string(lcd, "gramas");
-    sprintf(food_aux_string, "%d", food_aux); 
+    sprintf(food_aux_string, "%d", food_aux);
     i2c_lcd1602_move_cursor(lcd, 3, 1);
     i2c_lcd1602_write_string(lcd, food_aux_string);
     reset_buttons_and_encoder_value();
