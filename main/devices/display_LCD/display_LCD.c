@@ -1,5 +1,5 @@
 /*
- * diplsay_LCD.c
+ * display_LCD.c
  *
  *  Created on: 08/07/2022
  *
@@ -22,7 +22,6 @@
 
 static const char* TAG = "Display Feedback";
 
-static int start_RTC = 0; /* Initial RTC Value */
 static int periodicity_aux = 12; /* Periodicity */
 static int food_aux = 100; /* Food Quantity */
 static int display_screen_state = 0; /* Current Screen */
@@ -51,21 +50,6 @@ void i2c_master_init(void)
 int get_display_screen_state(void)
 {
     return display_screen_state;
-}
-
-int get_start_RTC(void)
-{
-    return start_RTC;
-}
-
-void init_RTC(void)
-{
-    start_RTC = 1;
-}
-
-void stop_RTC(void)
-{
-    start_RTC = 0;
 }
 
 void reset_buttons_and_encoder_value(void)
@@ -265,8 +249,8 @@ void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
         update_time_values(lcd, min, rtc_min_value_string,
                            rtc_min_value_char, 8);
 
-        hour = get_time_hour();
-        min = get_time_min();
+        hour = rtc_get_time_hour();
+        min = rtc_get_time_min();
         vTaskDelay(pdMS_TO_TICKS(50));
     } 
     i2c_lcd1602_clear(lcd);
