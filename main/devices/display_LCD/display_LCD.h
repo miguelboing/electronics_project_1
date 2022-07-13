@@ -19,19 +19,28 @@
 #define I2C_MASTER_RX_BUF_DISABLE   0                /* I2C master doesn't need buffer */
 #define I2C_MASTER_TIMEOUT_MS       1000
 
-void i2c_master_init(void);
+void display_i2c_master_init(void);
 
-int get_display_screen_state(void);
+int display_get_screen_state(void);
 
 void reset_buttons_and_encoder_value(void);
-void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[], char rtc_hour_min_char, int column);
+
+void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[],
+                        char rtc_hour_min_char, int column);
+
 void turn_off_display(i2c_lcd1602_info_t * lcd);
+
 void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min);
 
-int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit, int column, char aux_string[], char aux_char);
+int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit, int bottom_limit,
+                              int column, char aux_string[], char aux_char);
+
 int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd, int first_time);
+
 int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time);
+
 int display_go_screen_2(i2c_lcd1602_info_t * lcd);
+
 int display_go_screen_3(i2c_lcd1602_info_t * lcd);
 
 void lcd1602_task(void * pvParameter);

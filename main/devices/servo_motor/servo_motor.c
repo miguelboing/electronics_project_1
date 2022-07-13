@@ -26,7 +26,7 @@ void servo_motor_init(void) {
 
     if (iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg)== ESP_OK)
     {
-        printf("Servo motor initialized successfully!");
+        printf("Successfully configured servo motor!\n");
     }
 
 }

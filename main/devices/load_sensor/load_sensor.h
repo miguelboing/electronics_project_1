@@ -10,6 +10,6 @@
 
 void load_sensor_init(void);
 
-void load_sensor_get_weight(void);
+int load_sensor_get_weight(void);
 
 #endif /* LOAD_SENSOR_H_ */

@@ -33,7 +33,7 @@ static char rtc_hour_value_string[20], rtc_min_value_string[20];
 static char periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20];
 static char hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
 
-void i2c_master_init(void)
+void display_i2c_master_init(void)
 {
     i2c_config_t conf = {};
     conf.mode = I2C_MODE_MASTER;
@@ -47,16 +47,16 @@ void i2c_master_init(void)
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
-int get_display_screen_state(void)
+int display_get_screen_state(void)
 {
     return display_screen_state;
 }
 
 void reset_buttons_and_encoder_value(void)
 {
-    reset_buttons_state();
+    button_reset_states();
     reset_sw_encoder_state();
-    ESP_LOGI(TAG, "Buttons and encoder reseted.\n");
+    ESP_LOGI(TAG, "Buttons and encoder redefined.\n");
 }
 
 int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
@@ -126,7 +126,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             }  
             update_past_state_CLK_encoder();
         }
-        vTaskDelay(pdMS_TO_TICKS(20)); // adding this delay in pratice helped with encoder precision, the delay can not be much bigger, otherwise encoder gets too slow
+        vTaskDelay(pdMS_TO_TICKS(20)); /* Adding delay to increase encoder precision */
         update_sw_encod_is_pressed_feedback(); // adding this second variable for confirming sw_encoder was pressed helped a lot with precision
     }
     ESP_LOGI(TAG, "SW_encoder was pressed!.\n");
@@ -136,7 +136,8 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
     return aux;
 }
 
-void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[], char rtc_hour_min_char, int column)
+void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[],
+                        char rtc_hour_min_char, int column)
 {
     if(rtc_hour_min_update >= 10) // displays the hour or minute that was stored from rtc value
     {
@@ -237,11 +238,11 @@ void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
     i2c_lcd1602_write_string(lcd, "Bem vindo!");
     i2c_lcd1602_move_cursor(lcd, 7, 1);
     i2c_lcd1602_write_char(lcd, ':');
-    while(!get_button_1_state() && !get_button_2_state() && !get_button_3_state())
+    while(!button_get_state(BUTTON_1) && !button_get_state(BUTTON_2) && !button_get_state(BUTTON_3))
     {
-        update_button_1_state();
-        update_button_2_state();
-        update_button_3_state();
+        button_update_state(BUTTON_1);
+        button_update_state(BUTTON_2);
+        button_update_state(BUTTON_3);
 
         update_time_values(lcd, hour, rtc_hour_value_string,
                            rtc_hour_value_char, 5);

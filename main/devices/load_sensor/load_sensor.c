@@ -6,7 +6,6 @@ int32_t weight = 0;
 
 void load_sensor_init(void)
 {
-    printf("\n\n Hello estou inicializando \n\n");
     hx711_t dev;
     dev.dout = GPIO_NUM_12;
     dev.pd_sck = GPIO_NUM_27;
@@ -14,11 +13,11 @@ void load_sensor_init(void)
 
   if(hx711_init(&dev) == ESP_OK)
   {
-      printf("Configurado com sucesso!");
+      printf("Successfully configured HX711 ADC!\n");
   }
 }
 
-void load_sensor_get_weight(void)
+int load_sensor_get_weight(void)
 {
     hx711_t dev;
     dev.dout = GPIO_NUM_12;
@@ -32,7 +31,5 @@ void load_sensor_get_weight(void)
     }
 
     printf("\nValor medido: %d \n", weight);
+    return weight;
 }
-
-
-

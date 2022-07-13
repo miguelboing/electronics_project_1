@@ -17,7 +17,7 @@ void proximity_sensor_init(void)
     proximity_sensor_gpio.pin_bit_mask = (1ULL << IR_out);
     if (gpio_config(&proximity_sensor_gpio) == ESP_OK)
     {
-        printf("Successfully configured proximity sensor!");
+        printf("Successfully configured proximity sensor!\n");
     }
 }
 int proximity_sensor_get_presence(void)

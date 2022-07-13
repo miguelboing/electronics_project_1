@@ -27,7 +27,7 @@ static const char* TAG = "Main Feedback";
 
 int rtc_hour_value, rtc_min_value;
 int periodicity_hour_value = 12;
-int food_quantitiy_value = 100;
+int food_quantity_value = 100;
 bool rtc_started = false;
 
 
@@ -41,7 +41,7 @@ void lcd1602_task(void * pvParameter)
 {
     // i2c and devices initialization
     button_init(BUTTON_1); button_init(BUTTON_2); button_init(BUTTON_3);
-    i2c_master_init();
+    display_i2c_master_init();
     clk_encoder_init(CLK_encoder); dt_encoder_init(DT_encoder); sw_encoder_init(SW_encoder);
     load_sensor_init();
     proximity_sensor_init();
@@ -84,11 +84,11 @@ void lcd1602_task(void * pvParameter)
 
         while(1) // after RTC values are set in screen 0 this task will run indefinitely, unless button_2 is pressed in screen 1
         {
-            if(get_display_screen_state() == 5) // if while(1) was "restarted" button_1 must be pressed to advance
+            if(display_get_screen_state() == 5) // if while(1) was "restarted" button_1 must be pressed to advance
             {
-                while(!get_button_1_state()) 
+                while(!button_get_state(BUTTON_1))
                 {
-                    update_button_1_state();
+                    button_update_state(BUTTON_1);
                     vTaskDelay(pdMS_TO_TICKS(50));
                 }
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
@@ -98,12 +98,12 @@ void lcd1602_task(void * pvParameter)
             }
             
             display_go_screen_1(lcd_info, rtc_hour_value, rtc_min_value);
-            if (get_button_3_state()) // when in screen 1 button 3 will turn off backlight, going to stand by mode
+            if (button_get_state(BUTTON_3)) // when in screen 1 button 3 will turn off backlight, going to stand by mode
             {
                 ESP_LOGI(TAG, "Button_3 was pressed!\n");
                 turn_off_display(lcd_info);
             } 
-            else if(get_button_1_state()) // when in screen 1 button 1 will advance, moving to screen 2
+            else if(button_get_state(BUTTON_1)) // when in screen 1 button 1 will advance, moving to screen 2
             {
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
                 periodicity_hour_value = display_go_screen_2(lcd_info);
@@ -115,10 +115,10 @@ void lcd1602_task(void * pvParameter)
                 break; // when in screen 1 if button 2 is pressed you can configure RTC values again
             }
             
-            if(get_display_screen_state() == 2) 
+            if(display_get_screen_state() == 2)
             {
-                food_quantitiy_value = display_go_screen_3(lcd_info);  
-                ESP_LOGI(TAG, "Food_quantity value set to %d grams.\n", food_quantitiy_value);
+                food_quantity_value = display_go_screen_3(lcd_info);
+                ESP_LOGI(TAG, "Food_quantity value set to %d grams.\n", food_quantity_value);
             }
         }
     }
@@ -136,6 +136,19 @@ void rtc_task(void * pvParameter)
             ESP_LOGI(TAG, "RTC seconds value is %d\n", rtc_get_time_sec());
             ESP_LOGI(TAG, "RTC minutes value is %d\n", rtc_get_time_min());
             ESP_LOGI(TAG, "RTC hours value is %d\n", rtc_get_time_hour());
+            if (rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) /* Checks for feeding time */
+            {
+                if (!proximity_sensor_get_presence()) /* Check if dog is nearby */
+                {
+                    while(load_sensor_get_weight() < food_quantity_value)
+                    {
+                        servo_motor_open();
+                        vTaskDelay(pdMS_TO_TICKS(1000));
+                        servo_motor_close();
+                    }
+                }
+            }
+            ESP_LOGI(TAG, "Feeding Time is over! \n");
         }
         else 
         {
