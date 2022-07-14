@@ -67,3 +67,8 @@ void rtc_reset(void)
     time_hour = 0U;
     time_min = 0U;
 }
+
+void rtc_reset_abs(void)
+{
+    abs_time_sec = 0;
+}
