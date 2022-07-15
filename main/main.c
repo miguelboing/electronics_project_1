@@ -19,6 +19,7 @@
 #include "devices/proximity_sensor/proximity_sensor.h"
 #include "devices/rtc/rtc.h"
 #include "devices/servo_motor/servo_motor.h"
+#include "devices/ac_check/ac_check.h"
 
 /*Components*/
 #include "components/esp32-smbus/smbus.h"
@@ -55,6 +56,7 @@ void lcd1602_task(void * pvParameter)
     load_sensor_init();
     proximity_sensor_init();
     servo_motor_init();
+    ac_check_init();
 
 
     int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
@@ -184,9 +186,19 @@ void feeding_time_task(void * pvParameter)
         {
             while(!proximity_sensor_get_presence())  /* Check if dog is nearby */
             {
-                servo_motor_open();
+                if (ac_check_power())
+                {
+                    servo_motor_open();
+                }
+                else
+                {
+                    // Buzzer apita
+                }
             }
-            servo_motor_close();
+            if (ac_check_power())
+            {
+                servo_motor_close();
+            }
         }
 
         ESP_LOGI(TAG, "Ending feeding task! \n");
