@@ -43,6 +43,8 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd);
 
 int display_go_screen_3(i2c_lcd1602_info_t * lcd);
 
+void display_go_screen_4_debug_mode(i2c_lcd1602_info_t * lcd);
+
 void lcd1602_task(void * pvParameter);
 
 #endif /* DISPLAY_LCS_H_ */

@@ -44,7 +44,8 @@ void display_i2c_master_init(void)
     conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
 
     i2c_param_config(I2C_MASTER_NUM, &conf);
-    i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
+    i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE,
+                       I2C_MASTER_TX_BUF_DISABLE, 0);
 }
 
 int display_get_screen_state(void)
@@ -262,12 +263,16 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
 {   
     ESP_LOGI(TAG, "Begin Screen 2.\n");
     display_screen_state = 2;
+
     reset_buttons_and_encoder_value();
+
     i2c_lcd1602_move_cursor(lcd, 1, 0);
     i2c_lcd1602_write_string(lcd, "Periodicidade:");
     i2c_lcd1602_move_cursor(lcd, 7, 1);
     i2c_lcd1602_write_string(lcd, "horas");
+
     sprintf(periodicity_aux_string, "%d", periodicity_aux);
+
     i2c_lcd1602_move_cursor(lcd, 4, 1);
     i2c_lcd1602_write_string(lcd, periodicity_aux_string);
     periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4,
@@ -302,4 +307,21 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     turn_off_display(lcd);
     reset_buttons_and_encoder_value();
     return food_aux;
+}
+
+void display_go_screen_4_debug_mode(i2c_lcd1602_info_t * lcd)
+{
+    ESP_LOGI(TAG, "Begin Debug Screen (4).\n");
+
+    i2c_lcd1602_set_backlight(lcd, true);
+    display_screen_state = 4;
+
+    /* Column 1 */
+    i2c_lcd1602_move_cursor(lcd, 0, 0);
+    i2c_lcd1602_write_string(lcd, "Modo Debug");
+
+    /* Column 2 */
+    i2c_lcd1602_move_cursor(lcd, 0, 1);
+    i2c_lcd1602_write_string(lcd, " 30s | 200 g");
+
 }

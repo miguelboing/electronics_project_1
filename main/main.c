@@ -26,15 +26,24 @@
 static const char* TAG = "Main Feedback";
 
 int rtc_hour_value, rtc_min_value;
-int periodicity_hour_value = 12;
+float periodicity_hour_value = 12;
 int food_quantity_value = 100;
 bool rtc_started = false;
 
-
+void feeding_time_task(void * pvParameter);
+TaskHandle_t feeding_time_task_handle = NULL;
 void app_main(void)
 {
-    xTaskCreatePinnedToCore(&lcd1602_task, "lcd1602_task", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(&rtc_task, "rtc_task", 4096, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(&lcd1602_task, "lcd1602_task", 4096,
+                            NULL, 1, NULL, 0);
+
+    xTaskCreatePinnedToCore(&rtc_task, "rtc_task", 4096,
+                            NULL, 1, NULL, 1);
+
+    xTaskCreatePinnedToCore(&feeding_time_task, "feeding_time_task", 4096,
+                            NULL, 2, &feeding_time_task_handle, 0);
+
+    //vTaskStartScheduler();
 }
 
 void lcd1602_task(void * pvParameter)
@@ -46,7 +55,6 @@ void lcd1602_task(void * pvParameter)
     load_sensor_init();
     proximity_sensor_init();
     servo_motor_init();
-
 
 
     int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
@@ -80,7 +88,8 @@ void lcd1602_task(void * pvParameter)
         rtc_update_time_min(rtc_min_value);
         ESP_LOGI(TAG, "RTC_minutes reference set to %d minutes.\n", rtc_min_value);
         rtc_started = true;
-        if(first_time_config != 0) first_time_config = 0; 
+
+        if(first_time_config != 0) first_time_config = 0;
 
         while(1) // after RTC values are set in screen 0 this task will run indefinitely, unless button_2 is pressed in screen 1
         {
@@ -90,6 +99,16 @@ void lcd1602_task(void * pvParameter)
                 {
                     button_update_state(BUTTON_1);
                     vTaskDelay(pdMS_TO_TICKS(50));
+                    /* Check for debug mode */
+                    button_update_state(BUTTON_3);
+                    if(button_get_state(BUTTON_3))
+                    {
+                        /* Entering debug mode */
+                        periodicity_hour_value = 0.0083333; /* Periodicity is 30 seconds */
+                        food_quantity_value = 200; /* Food quantity is 200 g */
+                        display_go_screen_4_debug_mode(lcd_info); /* Get stuck in debug mode */
+
+                    }
                 }
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
                 i2c_lcd1602_set_backlight(lcd_info, true); 
@@ -106,8 +125,10 @@ void lcd1602_task(void * pvParameter)
             else if(button_get_state(BUTTON_1)) // when in screen 1 button 1 will advance, moving to screen 2
             {
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
-                periodicity_hour_value = display_go_screen_2(lcd_info);
-                ESP_LOGI(TAG, "Periodicity value set to %d hours.\n", periodicity_hour_value);
+                periodicity_hour_value =  (float) display_go_screen_2(lcd_info);
+                ESP_LOGI(TAG, "Periodicity value set to %f hours.\n", periodicity_hour_value);
+
+                rtc_reset();
             } 
             else 
             {
@@ -127,34 +148,51 @@ void lcd1602_task(void * pvParameter)
 
 void rtc_task(void * pvParameter)
 {
+
     while(1)
     {
         if(rtc_started)
         {
             rtc_update_time();
-            
-            ESP_LOGI(TAG, "RTC seconds value is %d\n", rtc_get_time_sec());
-            ESP_LOGI(TAG, "RTC minutes value is %d\n", rtc_get_time_min());
-            ESP_LOGI(TAG, "RTC hours value is %d\n", rtc_get_time_hour());
-            if (rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) /* Checks for feeding time */
-            {
-                if (!proximity_sensor_get_presence()) /* Check if dog is nearby */
-                {
-                    while(load_sensor_get_weight() < food_quantity_value)
-                    {
-                        servo_motor_open();
-                        vTaskDelay(pdMS_TO_TICKS(1000));
-                        servo_motor_close();
-                    }
-                }
+
+            ESP_LOGI(TAG, "Time %d:%d:%d", rtc_get_time_hour(), rtc_get_time_min(), rtc_get_time_sec());
+            ESP_LOGI(TAG, "| Absolute Time %d\n", rtc_get_time_abs());
+
+            if ((rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) && (feeding_time_task_handle != NULL)) {
+                vTaskResume(feeding_time_task_handle);
+                rtc_reset_abs();
             }
-            ESP_LOGI(TAG, "Feeding Time is over! \n");
         }
         else 
         {
             ESP_LOGI(TAG, "RTC is frozen \n");
             vTaskDelay(pdMS_TO_TICKS(1000));
         }
+    }
+    vTaskDelete(NULL);
+}
+
+void feeding_time_task(void * pvParameter)
+{
+    vTaskSuspend(NULL);
+
+    while(1)
+    {
+        ESP_LOGI(TAG, "Starting feeding task! \n");
+
+        while (load_sensor_get_weight() > 10000) //After load sensor calibration change to food_quantity_value
+        {
+            while(!proximity_sensor_get_presence())  /* Check if dog is nearby */
+            {
+                servo_motor_open();
+            }
+            servo_motor_close();
+        }
+
+        ESP_LOGI(TAG, "Ending feeding task! \n");
+        rtc_reset_abs();
+        vTaskSuspend(NULL);
+
     }
     vTaskDelete(NULL);
 }

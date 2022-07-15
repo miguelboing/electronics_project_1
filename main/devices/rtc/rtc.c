@@ -23,7 +23,6 @@ void rtc_update_time(void)
             if(time_hour > 23)
             {
                 time_hour = 0;
-                abs_time_sec = 0;
             }
         }
     }
@@ -33,7 +32,7 @@ void rtc_update_time(void)
 
 int rtc_get_time_abs(void)
 {
-    return time_sec;
+    return abs_time_sec;
 }
 
 int rtc_get_time_sec(void)
