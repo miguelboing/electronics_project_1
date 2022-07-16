@@ -52,7 +52,7 @@ void lcd1602_task(void * pvParameter)
     // i2c and devices initialization
     button_init(BUTTON_1); button_init(BUTTON_2); button_init(BUTTON_3);
     display_i2c_master_init();
-    clk_encoder_init(CLK_encoder); dt_encoder_init(DT_encoder); sw_encoder_init(SW_encoder);
+    encoder_init(CLK_encoder); encoder_init(DT_encoder); encoder_init(SW_encoder);
     load_sensor_init();
     proximity_sensor_init();
     servo_motor_init();

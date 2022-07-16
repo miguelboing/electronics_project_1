@@ -22,15 +22,11 @@ void ac_check_init(void)
     ac_check_gpio.pull_down_en = GPIO_PULLDOWN_ENABLE;
     ac_check_gpio.pull_up_en = GPIO_PULLUP_DISABLE;
 
-    if (gpio_config(&ac_check_gpio) == ESP_OK)
-    {
-        ESP_LOGI(TAG_AC_CHECK, "Successfully configured ac check!");
-    }
-
+    if (gpio_config(&ac_check_gpio) == ESP_OK) ESP_LOGI(TAG_AC_CHECK, "Successfully configured AC check!");
+    else ESP_LOGI(TAG_AC_CHECK, "AC check was not configured successfully!");
 }
 
 int ac_check_power(void)
 {
     return gpio_get_level(AC_check_pin);
 }
-

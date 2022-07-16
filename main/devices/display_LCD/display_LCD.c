@@ -28,10 +28,10 @@ static int display_screen_state = 0; /* Current Screen */
 static int hour_aux = 0; /* RTC Hour */
 static int min_aux = 0; /* RTC Minute */
 
-static char rtc_hour_value_char, rtc_min_value_char;
-static char rtc_hour_value_string[20], rtc_min_value_string[20];
-static char periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20];
-static char hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
+static char rtc_hour_value_char, rtc_min_value_char,
+            rtc_hour_value_string[20], rtc_min_value_string[20],
+            periodicity_aux_char, periodicity_aux_string[20], food_aux_string[20],
+            hour_aux_char, min_aux_char, hour_aux_string[20], min_aux_string[20];
 
 void display_i2c_master_init(void)
 {
@@ -61,20 +61,21 @@ void reset_buttons_and_encoder_value(void)
 }
 
 int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
-                              int bottom_limit, int column, char aux_string[], char aux_char)
+                              int bottom_limit, int column, char aux_string[], 
+                              char aux_char)
 {
-    while(!get_sw_encod_is_pressed() || !get_sw_encod_is_pressed_feedback()) 
+    while(!encoder_get_state(SW_encoder) || !encoder_get_state(SW_encoder_feedback)) 
     {
-        update_sw_encod_is_pressed();
-        update_present_state_CLK_encoder();
-        if(get_past_state_CLK_encoder() != get_present_state_CLK_encoder())
+        encoder_update_state(SW_encoder);
+        encoder_update_state(CLK_encoder);
+        if(encoder_get_state(CLK_past_state) != encoder_get_state(CLK_encoder))
         {
-            update_present_state_DT_encoder();
-            if (get_present_state_CLK_encoder() != get_present_state_DT_encoder()) 
+            encoder_update_state(DT_encoder);
+            if (encoder_get_state(CLK_encoder) != encoder_get_state(DT_encoder)) 
             {   
                 // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux < top_limit) aux++;} // screen 0.0 and 0.1 condition
-                else if(aux<100) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
+                else if(aux < 100) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
                 else {if(aux >= bottom_limit && aux < top_limit) aux += 100;} // screen 3 condition
 
                 if(aux >= 10 && aux != 1000)
@@ -86,7 +87,8 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
                 else if(aux == 1000)
                 {
                     sprintf(aux_string, "%d", aux); 
-                    i2c_lcd1602_move_cursor(lcd, column-1, 1); // 1000 value will occupy 1 more slot, so we shift value displayed to left;
+                    i2c_lcd1602_move_cursor(lcd, column-1, 1); /* 1000 value will occupy 1 more slot, 
+                                                                  so we shift value displayed to left;*/
                     i2c_lcd1602_write_string(lcd, aux_string);
                 }    
                 else 
@@ -101,7 +103,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             {
                 // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux > bottom_limit) aux--;} // screen 0.0 and 0.1 condition
-                else if(aux<100) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
+                else if(aux < 100) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
                 else {if(aux > bottom_limit && aux <= top_limit) aux -= 100;} // screen 3 condition
 
                 if(aux >= 10 && aux != 900)
@@ -125,10 +127,11 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
                     i2c_lcd1602_write_char(lcd, aux_char);
                 }                     
             }  
-            update_past_state_CLK_encoder();
+            encoder_update_state(CLK_past_state);
         }
         vTaskDelay(pdMS_TO_TICKS(20)); /* Adding delay to increase encoder precision */
-        update_sw_encod_is_pressed_feedback(); // adding this second variable for confirming sw_encoder was pressed helped a lot with precision
+        encoder_update_state(SW_encoder_feedback); /* adding this second variable for confirming 
+                                                      sw_encoder was pressed helped a lot with precision */
     }
     ESP_LOGI(TAG, "SW_encoder was pressed!.\n");
     reset_buttons_and_encoder_value();
@@ -137,8 +140,9 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
     return aux;
 }
 
-void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, char rtc_hour_min_string[],
-                        char rtc_hour_min_char, int column)
+void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update, 
+                        char rtc_hour_min_string[], char rtc_hour_min_char, 
+                        int column)
 {
     if(rtc_hour_min_update >= 10) // displays the hour or minute that was stored from rtc value
     {
@@ -296,7 +300,8 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, food_aux_string);
     reset_buttons_and_encoder_value();
     food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3,
-                                         food_aux_string, '$'); // since food_aux is always higher than 100g we don't need to use single char in this function
+                                         food_aux_string, '$'); /* since food_aux is always higher than 100g we 
+                                                                   don't need to use single char in this function */
     i2c_lcd1602_clear(lcd);
     ESP_LOGI(TAG, "End of Screen 3.\n");
     i2c_lcd1602_move_cursor(lcd, 0, 0);

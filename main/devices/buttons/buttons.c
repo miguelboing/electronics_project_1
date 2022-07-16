@@ -5,9 +5,6 @@
  *
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "esp_log.h"
 
 #include "driver/gpio.h"
@@ -17,6 +14,7 @@ static const char* TAG = "Buttons Feedback";
 
 int button_1_is_pressed, button_2_is_pressed, button_3_is_pressed;
 int button_state;
+
 void button_init(button_e button)
 {
     gpio_config_t button_init_gpio = {};  
@@ -26,7 +24,7 @@ void button_init(button_e button)
     button_init_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE; 
     button_init_gpio.pin_bit_mask = (1ULL << button); 
     if (gpio_config(&button_init_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured button!\n");
-    else ESP_LOGI(TAG, "Button was not configured sucessfully!\n"); 
+    else ESP_LOGE(TAG, "Button was not configured sucessfully!\n"); 
 }
 
 void button_reset_states(void)
@@ -57,13 +55,8 @@ int button_is_pressed(button_e button)
     return !gpio_get_level(button);
 }
 
-int get_button_1_state(void)
-{
-    return button_1_is_pressed;
-}
 int button_get_state(button_e button)
 {
-
     switch(button)
     {
         case BUTTON_1:
@@ -78,6 +71,3 @@ int button_get_state(button_e button)
     }
     return button_state;
 }
-
-
-

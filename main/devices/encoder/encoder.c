@@ -5,9 +5,6 @@
  *
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "esp_log.h"
 
 #include "driver/gpio.h"
@@ -15,58 +12,125 @@
 
 static const char* TAG = "Encoder Feedback";
 
-int past_state_CLK_encoder, present_state_CLK_encoder, present_state_DT_encoder, sw_encod_is_pressed, sw_encod_is_pressed_feedback; 
+int past_state_CLK_encoder, present_state_CLK_encoder, 
+    present_state_DT_encoder, sw_encod_is_pressed, 
+    sw_encod_is_pressed_feedback;
 
-void clk_encoder_init(clk_encoder_e encod)
+int encoder_state, encoder_level;
+
+void encoder_init(encoder_e encoder)
 {
-    gpio_config_t clk_encoder_gpio = {};  
-    clk_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
-    clk_encoder_gpio.mode = GPIO_MODE_INPUT; 
-    clk_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
-    clk_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
-    clk_encoder_gpio.pin_bit_mask = (1ULL << encod); 
-    if (gpio_config(&clk_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured CLK_encoder!\n");  
-    else ESP_LOGI(TAG, "CLK_encoder was not configured sucessfully\n");
+    switch(encoder)
+    {
+        case CLK_encoder:
+            gpio_config_t clk_encoder_gpio = {};  
+            clk_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
+            clk_encoder_gpio.mode = GPIO_MODE_INPUT; 
+            clk_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
+            clk_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
+            clk_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
+            if (gpio_config(&clk_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured CLK_encoder!\n");  
+            else ESP_LOGE(TAG, "CLK_encoder was not configured sucessfully\n");
+            break;
+
+        case DT_encoder:
+            gpio_config_t dt_encoder_gpio = {};  
+            dt_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
+            dt_encoder_gpio.mode = GPIO_MODE_INPUT; 
+            dt_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
+            dt_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
+            dt_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
+            if (gpio_config(&dt_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured DT_encoder!\n");  
+            else ESP_LOGE(TAG, "DT_encoder was not configured sucessfully\n");
+            break;
+
+        case SW_encoder:
+            gpio_config_t sw_encoder_gpio = {};  
+            sw_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
+            sw_encoder_gpio.mode = GPIO_MODE_INPUT; 
+            sw_encoder_gpio.pull_up_en = GPIO_PULLUP_ENABLE; 
+            sw_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE; 
+            sw_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
+            if (gpio_config(&sw_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured SW_encoder!\n");  
+            else ESP_LOGE(TAG, "SW_encoder was not configured sucessfully\n"); 
+            break;
+
+        case CLK_past_state:
+            break;
+
+        case SW_encoder_feedback:
+            break;
+    }
 }
 
-void dt_encoder_init(dt_encoder_e encod)
+int encoder_verify_level(encoder_e encoder)
 {
-    gpio_config_t dt_encoder_gpio = {};  
-    dt_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
-    dt_encoder_gpio.mode = GPIO_MODE_INPUT; 
-    dt_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
-    dt_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
-    dt_encoder_gpio.pin_bit_mask = (1ULL << encod); 
-    if (gpio_config(&dt_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured DT_encoder!\n");  
-    else ESP_LOGI(TAG, "DT_encoder was not configured sucessfully\n");
+    switch(encoder)
+    {
+        case CLK_encoder:
+            encoder_level = !gpio_get_level(CLK_encoder);
+            break;
+        case DT_encoder:
+            encoder_level = !gpio_get_level(DT_encoder);
+            break;
+        case SW_encoder:
+            encoder_level = !gpio_get_level(SW_encoder);
+            break;
+        case CLK_past_state:
+            break;
+        case SW_encoder_feedback:
+            break;
+    }
+    return encoder_level;
 }
 
-void sw_encoder_init(sw_encoder_e encod)
+int encoder_get_state(encoder_e encoder)
 {
-    gpio_config_t sw_encoder_gpio = {};  
-    sw_encoder_gpio.intr_type = GPIO_INTR_DISABLE; 
-    sw_encoder_gpio.mode = GPIO_MODE_INPUT; 
-    sw_encoder_gpio.pull_up_en = GPIO_PULLUP_ENABLE; 
-    sw_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE; 
-    sw_encoder_gpio.pin_bit_mask = (1ULL << encod); 
-    if (gpio_config(&sw_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured SW_encoder!\n");  
-    else ESP_LOGI(TAG, "SW_encoder was not configured sucessfully\n"); 
+    switch(encoder)
+    {
+        case CLK_encoder:
+            encoder_state = present_state_CLK_encoder;
+            break;
+        case CLK_past_state:
+            encoder_state = past_state_CLK_encoder;
+            break;
+        case DT_encoder:
+            encoder_state = present_state_DT_encoder;
+            break;
+        case SW_encoder:
+            encoder_state = sw_encod_is_pressed;
+            break;
+        case SW_encoder_feedback:
+            encoder_state = sw_encod_is_pressed_feedback;
+            break;            
+    }
+    return encoder_state;
 }
 
-int sw_encoder_is_pressed(sw_encoder_e encod) {return !gpio_get_level(encod);}
-int verify_clk_encoder_level(clk_encoder_e encod) {return gpio_get_level(encod);}
-int verify_dt_encoder_level(dt_encoder_e encod) {return gpio_get_level(encod);}
+void encoder_update_state(encoder_e encoder)
+{
+    switch(encoder)
+    {
+        case CLK_encoder:
+            present_state_CLK_encoder = encoder_verify_level(CLK_encoder);
+            break;
+        case CLK_past_state:
+            past_state_CLK_encoder = encoder_verify_level(CLK_encoder);
+            break;
+        case DT_encoder:
+            present_state_DT_encoder = encoder_verify_level(DT_encoder);
+            break;
+        case SW_encoder:
+            sw_encod_is_pressed = encoder_verify_level(SW_encoder);
+            break;
+        case SW_encoder_feedback:
+            sw_encod_is_pressed_feedback = encoder_verify_level(SW_encoder);
+            break;            
+    }
+}
 
-int get_past_state_CLK_encoder(void) {return past_state_CLK_encoder;}
-int get_present_state_CLK_encoder(void) {return present_state_CLK_encoder;}
-int get_present_state_DT_encoder(void) {return present_state_DT_encoder;}
-int get_sw_encod_is_pressed(void) {return sw_encod_is_pressed;}
-int get_sw_encod_is_pressed_feedback(void) {return sw_encod_is_pressed_feedback;}
-
-void update_past_state_CLK_encoder(void) {past_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);}
-void update_present_state_CLK_encoder(void) {present_state_CLK_encoder = verify_clk_encoder_level(CLK_encoder);}
-void update_present_state_DT_encoder(void) {present_state_DT_encoder = verify_dt_encoder_level(DT_encoder);}
-void update_sw_encod_is_pressed(void) {sw_encod_is_pressed = sw_encoder_is_pressed(SW_encoder);}
-void update_sw_encod_is_pressed_feedback(void) {sw_encod_is_pressed_feedback = sw_encoder_is_pressed(SW_encoder);}
-
-void reset_sw_encoder_state(void) {sw_encod_is_pressed = 0; sw_encod_is_pressed_feedback = 0;}
+void reset_sw_encoder_state(void) 
+{
+    sw_encod_is_pressed = 0; 
+    sw_encod_is_pressed_feedback = 0;
+}

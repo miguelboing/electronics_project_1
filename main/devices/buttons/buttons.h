@@ -25,5 +25,4 @@ int button_is_pressed(button_e button);
 
 int button_get_state(button_e button);
 
-
 #endif /* BUTTONS_H_ */
