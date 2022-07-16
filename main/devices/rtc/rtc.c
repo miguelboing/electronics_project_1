@@ -1,11 +1,15 @@
+/*
+ * rtc.h
+ *
+ *  Created on: 16/06/2022
+ *
+ */
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "rtc.h"
 
-static unsigned int time_sec;
-static unsigned int time_min;
-static unsigned int time_hour;
-static unsigned int abs_time_sec;
+static unsigned int time_sec, time_min, time_hour, abs_time_sec;
 
 void rtc_update_time(void)
 {
@@ -26,7 +30,6 @@ void rtc_update_time(void)
             }
         }
     }
-
     vTaskDelay(990 / portTICK_PERIOD_MS); /* xTicksToDelay = 990 to compensate variation */
 }
 

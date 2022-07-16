@@ -73,7 +73,6 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             encoder_update_state(DT_encoder);
             if (encoder_get_state(CLK_encoder) != encoder_get_state(DT_encoder)) 
             {   
-                // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux < top_limit) aux++;} // screen 0.0 and 0.1 condition
                 else if(aux < 100) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
                 else {if(aux >= bottom_limit && aux < top_limit) aux += 100;} // screen 3 condition
@@ -101,7 +100,6 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             }
             else 
             {
-                // all these if/else were needed because we are using the same function for screens 0, 2 and 3
                 if(bottom_limit == 0) {if(aux > bottom_limit) aux--;} // screen 0.0 and 0.1 condition
                 else if(aux < 100) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
                 else {if(aux > bottom_limit && aux <= top_limit) aux -= 100;} // screen 3 condition
@@ -129,14 +127,14 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             }  
             encoder_update_state(CLK_past_state);
         }
-        vTaskDelay(pdMS_TO_TICKS(20)); /* Adding delay to increase encoder precision */
+        vTaskDelay(pdMS_TO_TICKS(10)); /* Adding delay to increase encoder precision */
         encoder_update_state(SW_encoder_feedback); /* adding this second variable for confirming 
                                                       sw_encoder was pressed helped a lot with precision */
     }
     ESP_LOGI(TAG, "SW_encoder was pressed!.\n");
     reset_buttons_and_encoder_value();
     i2c_lcd1602_clear(lcd);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     return aux;
 }
 
@@ -169,7 +167,7 @@ void turn_off_display(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Desligando");
     i2c_lcd1602_move_cursor(lcd, 6, 1);
     i2c_lcd1602_write_string(lcd, "Tela");
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_set_backlight(lcd, false); 
     ESP_LOGI(TAG, "End Screen 5.\n");
@@ -282,7 +280,7 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
     periodicity_aux = encoder_variation_display(lcd, periodicity_aux, 23, 4, 4,
                                                 periodicity_aux_string, periodicity_aux_char);
     i2c_lcd1602_clear(lcd);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     ESP_LOGI(TAG, "End of Screen 2.\n");
     return periodicity_aux;
 }
@@ -308,7 +306,7 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
     i2c_lcd1602_write_string(lcd, "Alteracao feita!");    
     i2c_lcd1602_move_cursor(lcd, 4, 1);
     i2c_lcd1602_write_string(lcd, "Obrigado");    
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
     turn_off_display(lcd);
     reset_buttons_and_encoder_value();
     return food_aux;

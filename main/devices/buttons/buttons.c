@@ -12,8 +12,8 @@
 
 static const char* TAG = "Buttons Feedback";
 
-int button_1_is_pressed, button_2_is_pressed, button_3_is_pressed;
-int button_state;
+int button_1_is_pressed, button_2_is_pressed, 
+    button_3_is_pressed, button_state;
 
 void button_init(button_e button)
 {

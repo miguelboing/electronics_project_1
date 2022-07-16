@@ -1,13 +1,12 @@
 /*
  * proximity_sensor.h
  *
- *  Created on: 18 de mai de 2022
+ *  Created on: 18/05/2022
  *
  */
 
 #ifndef PROXIMITY_SENSOR_H_
 #define PROXIMITY_SENSOR_H_
-
 
 void proximity_sensor_init(void);
 

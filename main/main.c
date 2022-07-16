@@ -76,7 +76,7 @@ void lcd1602_task(void * pvParameter)
 
     while(1)
     { 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));
         ESP_LOGI(TAG, "Begin RTC reference settings.\n");
         reset_buttons_and_encoder_value();
 
@@ -115,7 +115,7 @@ void lcd1602_task(void * pvParameter)
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
                 i2c_lcd1602_set_backlight(lcd_info, true); 
                 reset_buttons_and_encoder_value();
-                vTaskDelay(pdMS_TO_TICKS(1000));
+                vTaskDelay(pdMS_TO_TICKS(500));
             }
             
             display_go_screen_1(lcd_info, rtc_hour_value, rtc_min_value);
@@ -127,9 +127,9 @@ void lcd1602_task(void * pvParameter)
             else if(button_get_state(BUTTON_1)) // when in screen 1 button 1 will advance, moving to screen 2
             {
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
+                vTaskDelay(pdMS_TO_TICKS(500));
                 periodicity_hour_value =  (float) display_go_screen_2(lcd_info);
                 ESP_LOGI(TAG, "Periodicity value set to %f hours.\n", periodicity_hour_value);
-
                 rtc_reset();
             } 
             else 

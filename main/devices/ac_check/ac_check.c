@@ -5,14 +5,13 @@
  *
  */
 
-
 #include "ac_check.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
 
 static const char* TAG_AC_CHECK = "AC CHECK:";
 
-#define AC_check_pin GPIO_NUM_25 /* D25 */
+#define AC_check_pin GPIO_NUM_26 /* D26 */
 
 void ac_check_init(void)
 {
@@ -21,6 +20,7 @@ void ac_check_init(void)
     ac_check_gpio.mode = GPIO_MODE_INPUT;
     ac_check_gpio.pull_down_en = GPIO_PULLDOWN_ENABLE;
     ac_check_gpio.pull_up_en = GPIO_PULLUP_DISABLE;
+    ac_check_gpio.pin_bit_mask = (1ULL << AC_check_pin); 
 
     if (gpio_config(&ac_check_gpio) == ESP_OK) ESP_LOGI(TAG_AC_CHECK, "Successfully configured AC check!");
     else ESP_LOGI(TAG_AC_CHECK, "AC check was not configured successfully!");
