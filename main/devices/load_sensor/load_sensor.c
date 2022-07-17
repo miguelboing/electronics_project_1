@@ -7,6 +7,9 @@
 
 #include "load_sensor.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "hx711.h"
 #include "esp_log.h"
 
@@ -32,11 +35,13 @@ int load_sensor_get_weight(void)
     if(hx711_read_average(&dev, 5, &weight) == ESP_OK) /* Get average from 5 measurements */
     {
         ESP_LOGI(TAG,"\nMeasured Weight: %d \n", weight);
+        vTaskDelay(500 / portTICK_PERIOD_MS); 
     }
     else
     {
         ESP_LOGE(TAG, "Failed to measure weight!");
         weight = INTMAX_MIN;
+        vTaskDelay(500 / portTICK_PERIOD_MS); 
     }
 
     return weight;

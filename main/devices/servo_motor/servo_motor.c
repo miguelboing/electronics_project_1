@@ -4,7 +4,6 @@
 
 #define sMOTOR GPIO_NUM_19 /* D19 */
 
-
 void servo_motor_init(void) {
 
     servo_config_t servo_cfg = {

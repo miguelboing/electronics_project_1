@@ -17,9 +17,9 @@ void ac_check_init(void)
 {
     gpio_config_t ac_check_gpio = {};
     ac_check_gpio.intr_type = GPIO_INTR_DISABLE;
-    ac_check_gpio.mode = GPIO_MODE_INPUT;
-    ac_check_gpio.pull_down_en = GPIO_PULLDOWN_ENABLE;
-    ac_check_gpio.pull_up_en = GPIO_PULLUP_DISABLE;
+    ac_check_gpio.mode = GPIO_MODE_INPUT;   
+    ac_check_gpio.pull_up_en = GPIO_PULLUP_ENABLE;
+    ac_check_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;
     ac_check_gpio.pin_bit_mask = (1ULL << AC_check_pin); 
 
     if (gpio_config(&ac_check_gpio) == ESP_OK) ESP_LOGI(TAG_AC_CHECK, "Successfully configured AC check!");

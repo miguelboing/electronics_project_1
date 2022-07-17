@@ -20,6 +20,7 @@
 #include "devices/rtc/rtc.h"
 #include "devices/servo_motor/servo_motor.h"
 #include "devices/ac_check/ac_check.h"
+#include "devices/buzzer/buzzer.h"
 
 /*Components*/
 #include "components/esp32-smbus/smbus.h"
@@ -33,6 +34,7 @@ bool rtc_started = false;
 
 void feeding_time_task(void * pvParameter);
 TaskHandle_t feeding_time_task_handle = NULL;
+
 void app_main(void)
 {
     xTaskCreatePinnedToCore(&lcd1602_task, "lcd1602_task", 4096,
@@ -57,7 +59,7 @@ void lcd1602_task(void * pvParameter)
     proximity_sensor_init();
     servo_motor_init();
     ac_check_init();
-
+    buzzer_init();
 
     int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
 
@@ -89,6 +91,7 @@ void lcd1602_task(void * pvParameter)
         rtc_min_value = display_go_screen_0_minutes(lcd_info, first_time_config);
         rtc_update_time_min(rtc_min_value);
         ESP_LOGI(TAG, "RTC_minutes reference set to %d minutes.\n", rtc_min_value);
+        
         rtc_started = true;
 
         if(first_time_config != 0) first_time_config = 0;
@@ -177,7 +180,6 @@ void rtc_task(void * pvParameter)
 void feeding_time_task(void * pvParameter)
 {
     vTaskSuspend(NULL);
-
     while(1)
     {
         ESP_LOGI(TAG, "Starting feeding task! \n");
@@ -189,22 +191,21 @@ void feeding_time_task(void * pvParameter)
                 if (ac_check_power())
                 {
                     servo_motor_open();
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                    servo_motor_close();
+                    vTaskDelay(pdMS_TO_TICKS(5000)); 
                 }
                 else
                 {
-                    // Buzzer apita
+                    buzzer_beep();
+                    vTaskDelay(pdMS_TO_TICKS(500));
                 }
             }
-            if (ac_check_power())
-            {
-                servo_motor_close();
-            }
+            vTaskDelay(pdMS_TO_TICKS(50));
         }
-
         ESP_LOGI(TAG, "Ending feeding task! \n");
         rtc_reset_abs();
         vTaskSuspend(NULL);
-
     }
     vTaskDelete(NULL);
 }

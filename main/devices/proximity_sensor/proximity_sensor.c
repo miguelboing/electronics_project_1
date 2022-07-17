@@ -1,5 +1,5 @@
 /*
- * proximity_sensor.c
+ * proximity_sensor.h
  *
  *  Created on: 18/05/2022
  *
@@ -27,5 +27,5 @@ void proximity_sensor_init(void)
 
 int proximity_sensor_get_presence(void)
 {
-    return gpio_get_level(IR_out);
+    return !gpio_get_level(IR_out);
 }
