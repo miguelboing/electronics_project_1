@@ -1,5 +1,5 @@
 /*
- * proximity_sensor.h
+ * proximity_sensor.c
  *
  *  Created on: 18/05/2022
  *
@@ -21,6 +21,7 @@ void proximity_sensor_init(void)
     proximity_sensor_gpio.pull_up_en = GPIO_PULLUP_ENABLE;
     proximity_sensor_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;
     proximity_sensor_gpio.pin_bit_mask = (1ULL << IR_out);
+    
     if (gpio_config(&proximity_sensor_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured proximity sensor!\n");
     else ESP_LOGE(TAG, "Proximity sensor was not configured sucessfully!\n"); 
 }

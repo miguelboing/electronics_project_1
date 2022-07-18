@@ -11,6 +11,8 @@
 
 static const char* TAG_AC_CHECK = "AC CHECK:";
 
+int ac_check_status;
+
 #define AC_check_pin GPIO_NUM_26 /* D26 */
 
 void ac_check_init(void)
@@ -23,10 +25,14 @@ void ac_check_init(void)
     ac_check_gpio.pin_bit_mask = (1ULL << AC_check_pin); 
 
     if (gpio_config(&ac_check_gpio) == ESP_OK) ESP_LOGI(TAG_AC_CHECK, "Successfully configured AC check!");
-    else ESP_LOGI(TAG_AC_CHECK, "AC check was not configured successfully!");
+    else ESP_LOGE(TAG_AC_CHECK, "AC check was not configured successfully!");
 }
 
 int ac_check_power(void)
 {
-    return gpio_get_level(AC_check_pin);
+    ac_check_status = gpio_get_level(AC_check_pin);
+
+    if(!ac_check_status) ESP_LOGW(TAG_AC_CHECK, "Feeder is not plugged, running in battery mode!");
+
+    return ac_check_status;
 }

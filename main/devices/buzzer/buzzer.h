@@ -9,6 +9,7 @@
 #define BUZZER_H_
 
 void buzzer_init(void);
+
 void buzzer_beep(void);
 
 #endif /* BUZZER_H_ */

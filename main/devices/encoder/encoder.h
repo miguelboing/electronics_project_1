@@ -18,9 +18,11 @@ typedef enum
 } encoder_e;
 
 void encoder_init(encoder_e encoder);
+
 void encoder_update_state(encoder_e encoder);
 
 int encoder_verify_level(encoder_e encoder);
+
 int encoder_get_state(encoder_e encoder);
 
 void reset_sw_encoder_state(void);

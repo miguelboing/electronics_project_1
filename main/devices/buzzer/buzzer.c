@@ -16,7 +16,7 @@
 #define BUZZER_ON  1
 #define BUZZER_OFF 0
 
-static const char* TAG = "Buzzer Feedback";
+static const char* TAG_BUZZER = "Buzzer Feedback";
 
 void buzzer_init(void)
 {
@@ -26,14 +26,16 @@ void buzzer_init(void)
     buzzer_gpio.pull_up_en = GPIO_PULLUP_DISABLE;
     buzzer_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;
     buzzer_gpio.pin_bit_mask = (1ULL << BUZZER);
-    if (gpio_config(&buzzer_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured buzzer!\n");
-    else ESP_LOGE(TAG, "Buzzer was not configured sucessfully!\n"); 
+
+    if (gpio_config(&buzzer_gpio) == ESP_OK) ESP_LOGI(TAG_BUZZER, "Successfully configured buzzer!\n");
+    else ESP_LOGE(TAG_BUZZER, "Buzzer was not configured sucessfully!\n"); 
 }
 
 void buzzer_beep(void)
 {
     gpio_set_level(BUZZER, BUZZER_ON);
     vTaskDelay(2000 / portTICK_PERIOD_MS); 
+    
     gpio_set_level(BUZZER, BUZZER_OFF);
     vTaskDelay(500 / portTICK_PERIOD_MS); 
 }

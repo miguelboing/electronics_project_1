@@ -25,6 +25,9 @@
 /*Components*/
 #include "components/esp32-smbus/smbus.h"
 
+#define DEBUG_PERIODICITY 0.0083333 /* Periodicity is 30 seconds */
+#define DEBUG_FOOD_QUANTITY 200 /* Food quantity is 200 g */
+
 static const char* TAG = "Main Feedback";
 
 int rtc_hour_value, rtc_min_value;
@@ -61,7 +64,8 @@ void lcd1602_task(void * pvParameter)
     ac_check_init();
     buzzer_init();
 
-    int first_time_config = 1; // auxiliary variable used in screens 0.0 and 0.1. Will be set to 0 after RTC values are configured for the first time.
+    int first_time_config = 1; /* auxiliary variable used in screens 0.0 and 0.1. Will be set 
+                                  to 0 after RTC values are configured for the first time. */
 
     // setting up lcd address and I2C_MASTER_NUM
     i2c_port_t i2c_num = I2C_MASTER_NUM;
@@ -84,10 +88,12 @@ void lcd1602_task(void * pvParameter)
 
         rtc_reset();
 
+        // screen 0.0
         rtc_hour_value = display_go_screen_0_hour(lcd_info , first_time_config);
         rtc_update_time_hour(rtc_hour_value);
         ESP_LOGI(TAG, "RTC_hour reference set to %d hours.\n", rtc_hour_value);
 
+        // screen 0.1
         rtc_min_value = display_go_screen_0_minutes(lcd_info, first_time_config);
         rtc_update_time_min(rtc_min_value);
         ESP_LOGI(TAG, "RTC_minutes reference set to %d minutes.\n", rtc_min_value);
@@ -98,21 +104,25 @@ void lcd1602_task(void * pvParameter)
 
         while(1) // after RTC values are set in screen 0 this task will run indefinitely, unless button_2 is pressed in screen 1
         {
+            // screen 5
             if(display_get_screen_state() == 5) // if while(1) was "restarted" button_1 must be pressed to advance
             {
                 while(!button_get_state(BUTTON_1))
                 {
                     button_update_state(BUTTON_1);
                     vTaskDelay(pdMS_TO_TICKS(50));
-                    /* Check for debug mode */
-                    button_update_state(BUTTON_3);
-                    if(button_get_state(BUTTON_3))
-                    {
-                        /* Entering debug mode */
-                        periodicity_hour_value = 0.0083333; /* Periodicity is 30 seconds */
-                        food_quantity_value = 200; /* Food quantity is 200 g */
-                        display_go_screen_4_debug_mode(lcd_info); /* Get stuck in debug mode */
 
+                    /* Check for debug mode */
+                    if(display_get_screen_state() != 4)
+                    {
+                        button_update_state(BUTTON_3);
+                        if(button_get_state(BUTTON_3))
+                        {
+                            /* Entering debug mode */
+                            periodicity_hour_value = DEBUG_PERIODICITY; 
+                            food_quantity_value = DEBUG_FOOD_QUANTITY; 
+                            display_go_screen_4_debug_mode(lcd_info); /* Get stuck in debug mode */
+                        }
                     }
                 }
                 ESP_LOGI(TAG, "Button_1 was pressed!\n");
@@ -121,6 +131,7 @@ void lcd1602_task(void * pvParameter)
                 vTaskDelay(pdMS_TO_TICKS(500));
             }
             
+            // screen 1
             display_go_screen_1(lcd_info, rtc_hour_value, rtc_min_value);
             if (button_get_state(BUTTON_3)) // when in screen 1 button 3 will turn off backlight, going to stand by mode
             {
@@ -141,6 +152,7 @@ void lcd1602_task(void * pvParameter)
                 break; // when in screen 1 if button 2 is pressed you can configure RTC values again
             }
             
+            // screen 3
             if(display_get_screen_state() == 2)
             {
                 food_quantity_value = display_go_screen_3(lcd_info);
@@ -160,19 +172,14 @@ void rtc_task(void * pvParameter)
         {
             rtc_update_time();
 
-            ESP_LOGI(TAG, "Time %d:%d:%d", rtc_get_time_hour(), rtc_get_time_min(), rtc_get_time_sec());
-            ESP_LOGI(TAG, "| Absolute Time %d\n", rtc_get_time_abs());
+            ESP_LOGI(TAG, "Time %d:%d:%d | Absolute Time %d\n", rtc_get_time_hour(), rtc_get_time_min(), rtc_get_time_sec(), rtc_get_time_abs());
 
             if ((rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) && (feeding_time_task_handle != NULL)) {
                 vTaskResume(feeding_time_task_handle);
                 rtc_reset_abs();
             }
         }
-        else 
-        {
-            ESP_LOGI(TAG, "RTC is frozen \n");
-            vTaskDelay(pdMS_TO_TICKS(1000));
-        }
+        else vTaskDelay(pdMS_TO_TICKS(10));
     }
     vTaskDelete(NULL);
 }
@@ -191,17 +198,16 @@ void feeding_time_task(void * pvParameter)
                 if (ac_check_power())
                 {
                     servo_motor_open();
-                    vTaskDelay(pdMS_TO_TICKS(5000));
-                    servo_motor_close();
-                    vTaskDelay(pdMS_TO_TICKS(5000)); 
+                    vTaskDelay(pdMS_TO_TICKS(1000));
                 }
                 else
                 {
                     buzzer_beep();
-                    vTaskDelay(pdMS_TO_TICKS(500));
                 }
             }
-            vTaskDelay(pdMS_TO_TICKS(50));
+            if (ac_check_power()) servo_motor_close();
+
+            vTaskDelay(pdMS_TO_TICKS(500));
         }
         ESP_LOGI(TAG, "Ending feeding task! \n");
         rtc_reset_abs();

@@ -1,5 +1,5 @@
 /*
- * rtc.h
+ * rtc.c
  *
  *  Created on: 16/06/2022
  *

@@ -10,7 +10,7 @@
 #include "driver/gpio.h"
 #include "encoder.h"
 
-static const char* TAG = "Encoder Feedback";
+static const char* TAG_ENCODER = "Encoder Feedback";
 
 int past_state_CLK_encoder, present_state_CLK_encoder, 
     present_state_DT_encoder, sw_encod_is_pressed, 
@@ -29,8 +29,8 @@ void encoder_init(encoder_e encoder)
             clk_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
             clk_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
             clk_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
-            if (gpio_config(&clk_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured CLK_encoder!\n");  
-            else ESP_LOGE(TAG, "CLK_encoder was not configured sucessfully\n");
+            if (gpio_config(&clk_encoder_gpio) == ESP_OK) ESP_LOGI(TAG_ENCODER, "Successfully configured CLK_encoder!\n");  
+            else ESP_LOGE(TAG_ENCODER, "CLK_encoder was not configured sucessfully\n");
             break;
 
         case DT_encoder:
@@ -40,8 +40,8 @@ void encoder_init(encoder_e encoder)
             dt_encoder_gpio.pull_up_en = GPIO_PULLUP_DISABLE; 
             dt_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE;  
             dt_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
-            if (gpio_config(&dt_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured DT_encoder!\n");  
-            else ESP_LOGE(TAG, "DT_encoder was not configured sucessfully\n");
+            if (gpio_config(&dt_encoder_gpio) == ESP_OK) ESP_LOGI(TAG_ENCODER, "Successfully configured DT_encoder!\n");  
+            else ESP_LOGE(TAG_ENCODER, "DT_encoder was not configured sucessfully\n");
             break;
 
         case SW_encoder:
@@ -51,8 +51,8 @@ void encoder_init(encoder_e encoder)
             sw_encoder_gpio.pull_up_en = GPIO_PULLUP_ENABLE; 
             sw_encoder_gpio.pull_down_en = GPIO_PULLDOWN_DISABLE; 
             sw_encoder_gpio.pin_bit_mask = (1ULL << encoder); 
-            if (gpio_config(&sw_encoder_gpio) == ESP_OK) ESP_LOGI(TAG, "Successfully configured SW_encoder!\n");  
-            else ESP_LOGE(TAG, "SW_encoder was not configured sucessfully\n"); 
+            if (gpio_config(&sw_encoder_gpio) == ESP_OK) ESP_LOGI(TAG_ENCODER, "Successfully configured SW_encoder!\n");  
+            else ESP_LOGE(TAG_ENCODER, "SW_encoder was not configured sucessfully\n"); 
             break;
 
         case CLK_past_state:

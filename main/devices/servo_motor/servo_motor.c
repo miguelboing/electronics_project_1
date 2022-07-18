@@ -1,6 +1,16 @@
+/*
+ * servo_motor.c
+ *
+ *  Created on: 18 de mai de 2022
+ *
+ */
+
 #include "servo_motor.h"
 #include "iot_servo.h"
 #include "driver/gpio.h"
+#include "esp_log.h"
+
+static const char* TAG_SERVO = "Servo motor Feedback";
 
 #define sMOTOR GPIO_NUM_19 /* D19 */
 
@@ -23,11 +33,8 @@ void servo_motor_init(void) {
             .channel_number = 1,
     };
 
-    if (iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg)== ESP_OK)
-    {
-        printf("Successfully configured servo motor!\n");
-    }
-
+    if (iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg)== ESP_OK) ESP_LOGI(TAG_SERVO, "Successfully configured servo motor!\n");
+    else ESP_LOGE(TAG_SERVO, "Servo motor was not configured sucessfully!");
 }
 
 void servo_motor_open(void)

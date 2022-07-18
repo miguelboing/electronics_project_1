@@ -20,7 +20,7 @@
 #include "../encoder/encoder.h"
 #include "../rtc/rtc.h"
 
-static const char* TAG = "Display Feedback";
+static const char* TAG_DISPLAY = "Display Feedback";
 
 static int periodicity_aux = 12; /* Periodicity */
 static int food_aux = 100; /* Food Quantity */
@@ -57,7 +57,7 @@ void reset_buttons_and_encoder_value(void)
 {
     button_reset_states();
     reset_sw_encoder_state();
-    ESP_LOGI(TAG, "Buttons and encoder redefined.\n");
+    ESP_LOGD(TAG_DISPLAY, "Buttons and encoder redefined.\n");
 }
 
 int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
@@ -131,7 +131,7 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
         encoder_update_state(SW_encoder_feedback); /* adding this second variable for confirming 
                                                       sw_encoder was pressed helped a lot with precision */
     }
-    ESP_LOGI(TAG, "SW_encoder was pressed!.\n");
+    ESP_LOGI(TAG_DISPLAY, "SW_encoder was pressed!.\n");
     reset_buttons_and_encoder_value();
     i2c_lcd1602_clear(lcd);
     vTaskDelay(pdMS_TO_TICKS(500));
@@ -159,7 +159,7 @@ void update_time_values(i2c_lcd1602_info_t * lcd, int rtc_hour_min_update,
 
 void turn_off_display(i2c_lcd1602_info_t * lcd)
 {   
-    ESP_LOGI(TAG, "Begin Screen 5.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 5.\n");
     display_screen_state = 5;
     reset_buttons_and_encoder_value();
     i2c_lcd1602_clear(lcd);
@@ -170,13 +170,13 @@ void turn_off_display(i2c_lcd1602_info_t * lcd)
     vTaskDelay(pdMS_TO_TICKS(500));
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_set_backlight(lcd, false); 
-    ESP_LOGI(TAG, "End Screen 5.\n");
-    ESP_LOGI(TAG, "Display entered stand by mode.\n");
+    ESP_LOGI(TAG_DISPLAY, "End Screen 5.\n");
+    ESP_LOGI(TAG_DISPLAY, "Display entered stand by mode.\n");
 }
 
 int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd, int first_time)
 {
-    ESP_LOGI(TAG, "Begin Screen 0.0.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 0.0.\n");
     display_screen_state = 0;
     i2c_lcd1602_set_backlight(lcd, true); // turn on backlight
     i2c_lcd1602_clear(lcd);// clear display
@@ -199,13 +199,13 @@ int display_go_screen_0_hour(i2c_lcd1602_info_t * lcd, int first_time)
         }          
     }
     hour_aux = encoder_variation_display(lcd, hour_aux, 23, 0, 7, hour_aux_string, hour_aux_char);
-    ESP_LOGI(TAG, "End of Screen 0.0.\n");
+    ESP_LOGI(TAG_DISPLAY, "End of Screen 0.0.\n");
     return hour_aux;
 }
 
 int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time)
 {
-    ESP_LOGI(TAG, "Begin Screen 0.1.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 0.1.\n");
     display_screen_state = 0;
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_move_cursor(lcd, 4, 0);
@@ -227,14 +227,14 @@ int display_go_screen_0_minutes(i2c_lcd1602_info_t * lcd, int first_time)
         }          
     }
     min_aux = encoder_variation_display(lcd, min_aux, 59, 0, 7, min_aux_string, min_aux_char);
-    ESP_LOGI(TAG, "End of Screen 0.1.\n");
+    ESP_LOGI(TAG_DISPLAY, "End of Screen 0.1.\n");
     return min_aux;
 }
 
 void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
 {
     // will freeze screen updating rtc values until either button_1, button_2 or button_3 is pressed
-    ESP_LOGI(TAG, "Begin Screen 1.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 1.\n");
     display_screen_state = 1;
     i2c_lcd1602_clear(lcd);
     i2c_lcd1602_move_cursor(lcd, 3, 0);
@@ -258,12 +258,12 @@ void display_go_screen_1(i2c_lcd1602_info_t * lcd, int hour, int min)
         vTaskDelay(pdMS_TO_TICKS(50));
     } 
     i2c_lcd1602_clear(lcd);
-    ESP_LOGI(TAG, "End of Screen 1.\n");
+    ESP_LOGI(TAG_DISPLAY, "End of Screen 1.\n");
 }
 
 int display_go_screen_2(i2c_lcd1602_info_t * lcd)
 {   
-    ESP_LOGI(TAG, "Begin Screen 2.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 2.\n");
     display_screen_state = 2;
 
     reset_buttons_and_encoder_value();
@@ -281,27 +281,38 @@ int display_go_screen_2(i2c_lcd1602_info_t * lcd)
                                                 periodicity_aux_string, periodicity_aux_char);
     i2c_lcd1602_clear(lcd);
     vTaskDelay(pdMS_TO_TICKS(500));
-    ESP_LOGI(TAG, "End of Screen 2.\n");
+    ESP_LOGI(TAG_DISPLAY, "End of Screen 2.\n");
     return periodicity_aux;
 }
 
 int display_go_screen_3(i2c_lcd1602_info_t * lcd)
 {
-    ESP_LOGI(TAG, "Begin Screen 3.\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Screen 3.\n");
     display_screen_state = 3;
     i2c_lcd1602_move_cursor(lcd, 2, 0);
     i2c_lcd1602_write_string(lcd, "Quantidade:");
     i2c_lcd1602_move_cursor(lcd, 7, 1);
     i2c_lcd1602_write_string(lcd, "gramas");
-    sprintf(food_aux_string, "%d", food_aux);
-    i2c_lcd1602_move_cursor(lcd, 3, 1);
-    i2c_lcd1602_write_string(lcd, food_aux_string);
+
+    if(food_aux != 1000)
+    {
+        sprintf(food_aux_string, "%d", food_aux);
+        i2c_lcd1602_move_cursor(lcd, 3, 1);
+        i2c_lcd1602_write_string(lcd, food_aux_string);
+    }
+    else
+    {
+        sprintf(food_aux_string, "%d", food_aux);
+        i2c_lcd1602_move_cursor(lcd, 2, 1);
+        i2c_lcd1602_write_string(lcd, food_aux_string);
+    }
+
     reset_buttons_and_encoder_value();
     food_aux = encoder_variation_display(lcd, food_aux, 1000, 100, 3,
                                          food_aux_string, '$'); /* since food_aux is always higher than 100g we 
                                                                    don't need to use single char in this function */
     i2c_lcd1602_clear(lcd);
-    ESP_LOGI(TAG, "End of Screen 3.\n");
+    ESP_LOGI(TAG_DISPLAY, "End of Screen 3.\n");
     i2c_lcd1602_move_cursor(lcd, 0, 0);
     i2c_lcd1602_write_string(lcd, "Alteracao feita!");    
     i2c_lcd1602_move_cursor(lcd, 4, 1);
@@ -314,17 +325,16 @@ int display_go_screen_3(i2c_lcd1602_info_t * lcd)
 
 void display_go_screen_4_debug_mode(i2c_lcd1602_info_t * lcd)
 {
-    ESP_LOGI(TAG, "Begin Debug Screen (4).\n");
+    ESP_LOGI(TAG_DISPLAY, "Begin Debug Screen (4).\n");
 
     i2c_lcd1602_set_backlight(lcd, true);
     display_screen_state = 4;
 
-    /* Column 1 */
+    /* Row 1 */
     i2c_lcd1602_move_cursor(lcd, 0, 0);
     i2c_lcd1602_write_string(lcd, "Modo Debug");
 
-    /* Column 2 */
+    /* Row 2 */
     i2c_lcd1602_move_cursor(lcd, 0, 1);
-    i2c_lcd1602_write_string(lcd, " 30s | 200 g");
-
+    i2c_lcd1602_write_string(lcd, "30s | 200 g");
 }
