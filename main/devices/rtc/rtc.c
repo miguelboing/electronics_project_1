@@ -19,7 +19,6 @@ void rtc_update_time(void)
     {
         time_sec = 0;
         time_min++;
-
         if(time_min > 59)
         {
             time_min = 0;

@@ -48,8 +48,6 @@ void app_main(void)
 
     xTaskCreatePinnedToCore(&feeding_time_task, "feeding_time_task", 4096,
                             NULL, 2, &feeding_time_task_handle, 0);
-
-    //vTaskStartScheduler();
 }
 
 void lcd1602_task(void * pvParameter)
@@ -60,7 +58,6 @@ void lcd1602_task(void * pvParameter)
     encoder_init(CLK_encoder); encoder_init(DT_encoder); encoder_init(SW_encoder);
     load_sensor_init();
     proximity_sensor_init();
-    servo_motor_init();
     ac_check_init();
     buzzer_init();
 
@@ -165,16 +162,17 @@ void lcd1602_task(void * pvParameter)
 
 void rtc_task(void * pvParameter)
 {
-
     while(1)
     {
         if(rtc_started)
         {
             rtc_update_time();
 
-            ESP_LOGI(TAG, "Time %d:%d:%d | Absolute Time %d\n", rtc_get_time_hour(), rtc_get_time_min(), rtc_get_time_sec(), rtc_get_time_abs());
+            ESP_LOGI(TAG, "Time %d:%d:%d | Absolute Time %d\n", rtc_get_time_hour(), rtc_get_time_min(), 
+                                                                rtc_get_time_sec(), rtc_get_time_abs());
 
-            if ((rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) && (feeding_time_task_handle != NULL)) {
+            if ((rtc_get_time_abs() > (periodicity_hour_value * 60 * 60)) && (feeding_time_task_handle != NULL)) 
+            {
                 vTaskResume(feeding_time_task_handle);
                 rtc_reset_abs();
             }
@@ -187,30 +185,31 @@ void rtc_task(void * pvParameter)
 void feeding_time_task(void * pvParameter)
 {
     vTaskSuspend(NULL);
+    
     while(1)
     {
         ESP_LOGI(TAG, "Starting feeding task! \n");
-
-        while (load_sensor_get_weight() > 10000) //After load sensor calibration change to food_quantity_value
+        
+        servo_motor_init(); 
+        
+        while(load_sensor_get_weight() < food_quantity_value) 
         {
             while(!proximity_sensor_get_presence())  /* Check if dog is nearby */
             {
-                if (ac_check_power())
-                {
-                    servo_motor_open();
-                    vTaskDelay(pdMS_TO_TICKS(1000));
-                }
-                else
-                {
-                    buzzer_beep();
-                }
+                if(ac_check_power()) servo_motor_start_spin();
+                else buzzer_beep(); /* 
+                                       if the feeder is not connected to 220V, we beep a
+                                       a buzzer instead of spinning the servo motor. The
+                                       objective is to save the battery live.
+                                    */
+                if(load_sensor_get_weight() >= food_quantity_value) break;
+                vTaskDelay(pdMS_TO_TICKS(10));
             }
-            if (ac_check_power()) servo_motor_close();
-
-            vTaskDelay(pdMS_TO_TICKS(500));
+            if(ac_check_power()) servo_motor_terminate();
         }
         ESP_LOGI(TAG, "Ending feeding task! \n");
         rtc_reset_abs();
+
         vTaskSuspend(NULL);
     }
     vTaskDelete(NULL);

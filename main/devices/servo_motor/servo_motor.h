@@ -10,8 +10,8 @@
 
 void servo_motor_init(void);
 
-void servo_motor_open(void);
+void servo_motor_terminate(void);
 
-void servo_motor_close(void);
+void servo_motor_start_spin(void);
 
 #endif /* SERVO_MOTOR_H_ */

@@ -12,7 +12,7 @@
 
 static const char* TAG_SERVO = "Servo motor Feedback";
 
-#define sMOTOR GPIO_NUM_19 /* D19 */
+#define sMOTOR GPIO_NUM_19 
 
 void servo_motor_init(void) {
 
@@ -33,16 +33,21 @@ void servo_motor_init(void) {
             .channel_number = 1,
     };
 
-    if (iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg)== ESP_OK) ESP_LOGI(TAG_SERVO, "Successfully configured servo motor!\n");
+    if(iot_servo_init(LEDC_LOW_SPEED_MODE, &servo_cfg) == ESP_OK) ESP_LOGI(TAG_SERVO, "Successfully configured servo motor!\n");
     else ESP_LOGE(TAG_SERVO, "Servo motor was not configured sucessfully!");
 }
 
-void servo_motor_open(void)
+/* Since our servo was internally modified to rotate more than 360 degrees, we need to
+   terminate it's GPIO terminal in order to stop it, otherwise the component would keep
+   vibrating, compromising our feeder structure  
+*/
+void servo_motor_terminate(void)
 {
-    iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 5, 180.0f);
+    if(gpio_reset_pin(sMOTOR) == ESP_OK) ESP_LOGI(TAG_SERVO, "Servo motor's GPIO was terminated!\n");
+    else ESP_LOGE(TAG_SERVO, "Servo motor's GPIO  was not terminated sucessfully!");
 }
 
-void servo_motor_close(void)
+void servo_motor_start_spin(void)
 {
-    iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 5, 0.0f);
+    iot_servo_write_angle(LEDC_LOW_SPEED_MODE, 5, 180.0f);
 }

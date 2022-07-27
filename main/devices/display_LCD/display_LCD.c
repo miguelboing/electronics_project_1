@@ -73,23 +73,16 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             encoder_update_state(DT_encoder);
             if (encoder_get_state(CLK_encoder) != encoder_get_state(DT_encoder)) 
             {   
-                if(bottom_limit == 0) {if(aux < top_limit) aux++;} // screen 0.0 and 0.1 condition
-                else if(aux < 100) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
-                else {if(aux >= bottom_limit && aux < top_limit) aux += 100;} // screen 3 condition
+                if(display_get_screen_state() == 0) {if(aux < top_limit) aux++;} // screen 0.0 and 0.1 condition
+                else if(display_get_screen_state() == 2) {if(aux >= bottom_limit && aux <= top_limit) aux++;} // screen 2 condition
+                else if(display_get_screen_state() == 3) {if(aux >= bottom_limit && aux < top_limit) aux += 50;} // screen 3 condition
 
-                if(aux >= 10 && aux != 1000)
+                if(aux >= 10)
                 {
                     sprintf(aux_string, "%d", aux); // transforming int hour (or minute) to string
                     i2c_lcd1602_move_cursor(lcd, column, 1);
                     i2c_lcd1602_write_string(lcd, aux_string);
-                }
-                else if(aux == 1000)
-                {
-                    sprintf(aux_string, "%d", aux); 
-                    i2c_lcd1602_move_cursor(lcd, column-1, 1); /* 1000 value will occupy 1 more slot, 
-                                                                  so we shift value displayed to left;*/
-                    i2c_lcd1602_write_string(lcd, aux_string);
-                }    
+                }   
                 else 
                 {
                     aux_char = aux + '0'; 
@@ -100,23 +93,16 @@ int encoder_variation_display(i2c_lcd1602_info_t * lcd, int aux, int top_limit,
             }
             else 
             {
-                if(bottom_limit == 0) {if(aux > bottom_limit) aux--;} // screen 0.0 and 0.1 condition
-                else if(aux < 100) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
-                else {if(aux > bottom_limit && aux <= top_limit) aux -= 100;} // screen 3 condition
+                if(display_get_screen_state() == 0) {if(aux > bottom_limit) aux--;} // screen 0.0 and 0.1 condition
+                else if(display_get_screen_state() == 2) {if(aux > bottom_limit && aux <= top_limit + 1) aux--;} // screen 2 condition
+                else if(display_get_screen_state() == 3) {if(aux > bottom_limit && aux <= top_limit) aux -= 50;} // screen 3 condition
 
-                if(aux >= 10 && aux != 900)
+                if(aux >= 1)
                 {
                     sprintf(aux_string, "%d", aux); // transforming int hour (or minute) to string
                     i2c_lcd1602_move_cursor(lcd, column, 1);
                     i2c_lcd1602_write_string(lcd, aux_string);
                 }
-                else if(aux == 900)
-                {
-                    sprintf(aux_string, "%d", aux);
-                    i2c_lcd1602_move_cursor(lcd, column-1, 1); 
-                    i2c_lcd1602_write_char(lcd, ' '); // erases the "1" from "1000" value that was read before.
-                    i2c_lcd1602_write_string(lcd, aux_string);
-                }    
                 else 
                 {
                     aux_char = aux + '0'; 
